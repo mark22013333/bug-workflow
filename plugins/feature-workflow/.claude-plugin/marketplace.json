@@ -1,0 +1,31 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "feature-workflow",
+  "description": "功能開發工作流 — 整合 Notion 與 Claude Code，涵蓋完整功能開發生命週期管理",
+  "owner": {
+    "name": "Cheng"
+  },
+  "plugins": [
+    {
+      "name": "feature-workflow",
+      "description": "功能開發工作流 — 需求分析、規格設計、DB 設計、架構設計、程式碼骨架、品質審查、結案",
+      "version": "1.0.0",
+      "author": {
+        "name": "Cheng"
+      },
+      "source": "./",
+      "category": "productivity",
+      "skills": [
+        "./skills/feature-setup",
+        "./skills/feature-start",
+        "./skills/feature-spec",
+        "./skills/feature-db",
+        "./skills/feature-arch",
+        "./skills/feature-scaffold",
+        "./skills/feature-update",
+        "./skills/feature-review",
+        "./skills/feature-close"
+      ]
+    }
+  ]
+}

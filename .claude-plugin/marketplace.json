@@ -1,0 +1,30 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "company-marketplace",
+  "description": "公司內部 Claude Code Plugins — 包含 Bug 工作流、Feature 開發工作流等自訂 Plugins",
+  "owner": {
+    "name": "Cheng"
+  },
+  "plugins": [
+    {
+      "name": "bug-workflow",
+      "description": "Bug 文件工作流 — 整合 Notion 與 Claude Code，自動化 Bug 生命週期管理（建立、調查、結案、搜尋、復發處理）",
+      "version": "1.0.0",
+      "author": {
+        "name": "Cheng"
+      },
+      "source": "./plugins/bug-workflow",
+      "category": "productivity"
+    },
+    {
+      "name": "feature-workflow",
+      "description": "功能開發工作流 — 整合 Notion 與 Claude Code，涵蓋需求分析、規格設計、DB 設計、架構設計、程式碼骨架產生、品質審查到結案的完整生命週期管理",
+      "version": "1.0.0",
+      "author": {
+        "name": "Cheng"
+      },
+      "source": "./plugins/feature-workflow",
+      "category": "productivity"
+    }
+  ]
+}
