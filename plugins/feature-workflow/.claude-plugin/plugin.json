@@ -16,7 +16,8 @@
     "./skills/feature-scaffold",
     "./skills/feature-update",
     "./skills/feature-review",
-    "./skills/feature-close"
+    "./skills/feature-close",
+    "./skills/feature-auto"
   ],
   "keywords": [
     "feature",

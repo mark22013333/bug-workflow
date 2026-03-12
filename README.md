@@ -55,6 +55,7 @@ claude plugin enable feature-workflow
 | `/feature-update <進度>` | 更新開發進度 |
 | `/feature-review` | 程式碼品質檢查 |
 | `/feature-close` | 結案 + 同步設計庫 |
+| `/feature-auto <檔案路徑>` | 讀取規格書自動執行完整流程 |
 
 詳細說明見 [plugins/feature-workflow/README.md](plugins/feature-workflow/README.md)
 
