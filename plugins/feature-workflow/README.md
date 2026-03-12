@@ -53,6 +53,22 @@ claude plugin enable feature-workflow
 
 ### 快捷方式：一鍵自動化（/feature-auto）
 
+以 **Agent Team 協作模式**（Leader + 4 Teammates）自動執行完整流程。需先完成以下設定：
+
+**前置設定**：
+
+```bash
+# 1. 啟用 Agent Teams（加入 ~/.zshrc 永久生效）
+export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+```
+
+```json
+// 2. 啟用 Extended Thinking（~/.claude/settings.json）
+{
+  "alwaysThinkingEnabled": true
+}
+```
+
 如果已有規格書檔案，可直接一行指令完成從建立到骨架的全流程：
 
 ```
@@ -65,25 +81,26 @@ claude plugin enable feature-workflow
 📄 規格書：doc/訂閱推播統計.md
 📝 功能名稱：訂閱推播統計報表
 📋 需求摘要：提供後台查詢訂閱推播的開封率與點擊率統計...
+🤖 執行模式：Agent Team（Leader + 4 Teammates）
 
 即將依序執行：
-  1. ✅ feature-start   — 建立 Notion 條目 + Git branch
-  2. ✅ feature-spec    — 技術規格書（Agent）
-  3. ✅ feature-db      — 資料庫設計（Agent）
-  4. ✅ feature-arch    — 架構設計（Agent）
-  5. ✅ feature-scaffold — 程式碼骨架（Agent）
+  1. ✅ feature-start   — Leader 建立 Notion 條目 + Git branch
+  2. ✅ feature-spec    — spec-analyst 產出技術規格書
+  3. ✅ feature-db      — db-designer 設計資料庫
+  4. ✅ feature-arch    — arch-designer 設計架構
+  5. ✅ feature-scaffold — code-generator 產生程式碼骨架
 
 確認執行？[Y/n]
 ```
 
-確認後自動依序執行，每完成一個階段會顯示進度：
+確認後 Agent Team 依序執行，每完成一個階段會顯示進度：
 
 ```
 ✅ [1/5] feature-start 完成 — Notion 頁面已建立
-✅ [2/5] feature-spec 完成 — 3 個 API、5 項業務規則
-✅ [3/5] feature-db 完成 — 2 個表、4 個索引
-✅ [4/5] feature-arch 完成 — 8 個類別、策略模式
-✅ [5/5] feature-scaffold 完成 — 8 個檔案已建立
+✅ [2/5] spec-analyst 完成 — 3 個 API、5 項業務規則
+✅ [3/5] db-designer 完成 — 2 個表、4 個索引
+✅ [4/5] arch-designer 完成 — 8 個類別、策略模式
+✅ [5/5] code-generator 完成 — 8 個檔案已建立
 
 🎉 功能建立完成！
 📊 Notion 頁面：https://notion.so/xxx
