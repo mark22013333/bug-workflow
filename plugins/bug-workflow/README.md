@@ -35,7 +35,7 @@
 
 ```bash
 # 1. 加入 Marketplace（一次性）
-claude marketplace add --github mark22013333/bug-workflow
+claude plugin marketplace add mark22013333/bug-workflow
 
 # 2. 安裝
 claude plugin install bug-workflow
