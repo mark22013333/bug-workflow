@@ -11,7 +11,13 @@ claude plugin marketplace add mark22013333/bug-workflow
 # 2. 安裝需要的 Plugin
 claude plugin install bug-workflow
 claude plugin install feature-workflow
+
+# 3. 啟用 Plugin（安裝後預設為 disabled，必須手動啟用）
+claude plugin enable bug-workflow
+claude plugin enable feature-workflow
 ```
+
+> **重要**：Plugin 安裝後預設為停用狀態（disabled），必須執行 `claude plugin enable` 才能在對話中使用對應的 `/` 指令。可用 `claude plugin list` 確認啟用狀態。
 
 ## Plugin 一覽
 
@@ -79,7 +85,7 @@ claude plugin install Notion
 
 > **注意**：每位使用者需各自完成 OAuth 授權，授權範圍僅限自己選擇的 Workspace。
 
-### Step 2：安裝 Workflow Plugin
+### Step 2：安裝並啟用 Workflow Plugin
 
 ```bash
 # 加入 Marketplace（一次性）
@@ -88,9 +94,15 @@ claude plugin marketplace add mark22013333/bug-workflow
 # 安裝需要的 Plugin（擇一或都裝）
 claude plugin install bug-workflow
 claude plugin install feature-workflow
+
+# 啟用 Plugin（安裝後預設為 disabled）
+claude plugin enable bug-workflow
+claude plugin enable feature-workflow
 ```
 
-安裝後**重啟 Claude Code**。
+安裝並啟用後**重啟 Claude Code**。
+
+> 可用 `claude plugin list` 確認狀態，確保需要的 Plugin 顯示為 `✔ enabled`。
 
 ### Step 3：執行 Setup 引導
 
