@@ -53,10 +53,7 @@ claude plugin install feature-workflow
 ## 前置條件
 
 1. **Claude Code** — [安裝指南](https://docs.anthropic.com/en/docs/claude-code)
-2. **Notion Plugin** — 需先安裝 Notion MCP Server
-   ```bash
-   claude plugin install Notion
-   ```
+2. **Notion Plugin** — 需先安裝 Notion MCP Server（見下方設定步驟）
 3. **Notion Workspace** — 需有以下資料庫（或由 setup 引導設定）：
    - **任務追蹤工具**：Bug / 功能 生命週期管理（兩個 Plugin 共用）
    - **專案資料庫**：管理專案與本機路徑對應（兩個 Plugin 共用）
@@ -65,7 +62,38 @@ claude plugin install feature-workflow
 
 ## 首次設定
 
-安裝 Plugin 後，各自執行一次 setup：
+### Step 1：安裝 Notion MCP Server 並完成 OAuth 授權
+
+```bash
+claude plugin install Notion
+```
+
+安裝後**重啟 Claude Code**，然後在對話中執行任何 Notion 操作（如輸入 `/Notion:search`）。
+首次使用時會自動開啟瀏覽器，導向 Notion OAuth 授權頁面：
+
+1. 瀏覽器彈出 Notion 授權頁面
+2. 選擇要授權的 Workspace
+3. 點擊「允許存取」
+4. 授權完成後回到 Claude Code，即可使用所有 Notion 工具
+
+> **注意**：每位使用者需各自完成 OAuth 授權，授權範圍僅限自己選擇的 Workspace。
+
+### Step 2：安裝 Workflow Plugin
+
+```bash
+# 加入 Marketplace（一次性）
+claude plugin marketplace add mark22013333/bug-workflow
+
+# 安裝需要的 Plugin（擇一或都裝）
+claude plugin install bug-workflow
+claude plugin install feature-workflow
+```
+
+安裝後**重啟 Claude Code**。
+
+### Step 3：執行 Setup 引導
+
+在專案目錄下執行：
 
 ```
 /bug-setup        ← 偵測 Notion 資料庫、設定專案對應
@@ -73,6 +101,8 @@ claude plugin install feature-workflow
 ```
 
 建議先執行 `/bug-setup`，`/feature-setup` 會自動匯入共用的 Notion ID 和專案路徑。
+
+> Setup 會自動偵測 Workspace 中的資料庫並產出設定檔，過程中會列出候選讓你選擇，不需要手動輸入任何 ID。
 
 ## 跨專案支援
 
