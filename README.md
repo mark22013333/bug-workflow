@@ -8,13 +8,11 @@
 # 安裝 Notion MCP Server（提供 Notion 讀寫能力）
 claude plugin install Notion
 
-# 加入 Marketplace 並安裝 Plugin
-claude plugin marketplace add mark22013333/bug-workflow
-claude plugin install bug-workflow
-claude plugin install feature-workflow
-
-# 啟用 Plugin（安裝後預設為 disabled）
-claude plugin enable bug-workflow
+# 加入 Marketplace → 安裝 → 啟用（用 && 確保依序執行）
+claude plugin marketplace add mark22013333/bug-workflow && \
+claude plugin install bug-workflow && \
+claude plugin install feature-workflow && \
+claude plugin enable bug-workflow && \
 claude plugin enable feature-workflow
 ```
 
@@ -89,10 +87,10 @@ claude plugin install Notion
 ### Step 2：安裝並啟用 Workflow Plugin
 
 ```bash
-claude plugin marketplace add mark22013333/bug-workflow
-claude plugin install bug-workflow
-claude plugin install feature-workflow
-claude plugin enable bug-workflow
+claude plugin marketplace add mark22013333/bug-workflow && \
+claude plugin install bug-workflow && \
+claude plugin install feature-workflow && \
+claude plugin enable bug-workflow && \
 claude plugin enable feature-workflow
 ```
 
