@@ -49,6 +49,80 @@ claude plugin enable feature-workflow
 
 流程非強制線性，可跳過任何步驟、反覆執行、隨時用 feature-update 記錄。
 
+## 使用範例
+
+以「新增訂閱推播統計報表」功能為例，展示完整開發流程：
+
+### 1. 建立功能條目
+
+```
+/feature-start 新增訂閱推播統計報表
+```
+
+自動偵測當前專案、建立 Notion 頁面（含 7 區塊模板）、詢問優先順序與難度，可選建立 Git branch：
+
+```
+✅ 功能條目已建立！
+📄 Notion：https://notion.so/xxx
+🔀 分支：feature/subscription-push-statistics
+📋 階段：需求分析
+```
+
+### 2. 產出技術規格
+
+```
+/feature-spec 需要依日期範圍查詢，含開封率與點擊率
+```
+
+Opus Agent 讀取專案 CLAUDE.md 和現有 Controller 風格，產出 API 設計、業務邏輯規則、錯誤處理策略，自動寫入 Notion「📐 技術規格」區塊。
+
+### 3. 設計資料庫
+
+```
+/feature-db 需要支援軟刪除
+```
+
+Opus Agent 根據技術規格和現有 Entity 慣例，產出 CREATE TABLE / INDEX / 範例資料 / Rollback SQL，寫入 Notion「🗄️ 資料庫設計」區塊，可選匯出 SQL 檔案到專案目錄。
+
+### 4. 設計架構
+
+```
+/feature-arch
+```
+
+Opus Agent 產出分層架構圖（Mermaid）、類別清單、介面定義、設計模式選擇，寫入 Notion「🏗️ 架構設計」區塊。
+
+### 5. 產生程式碼骨架
+
+```
+/feature-scaffold --dry-run    ← 先預覽檔案清單
+/feature-scaffold              ← 確認後實際建立
+```
+
+Opus Agent 掃描專案現有程式碼學習風格，產生 POJO、Mapper、Service、Controller 等骨架檔案，風格與專案完全一致。
+
+### 6. 開發過程中記錄進度
+
+```
+/feature-update Service 層查詢邏輯已完成，剩餘 Controller 單元測試
+```
+
+### 7. 程式碼審查
+
+```
+/feature-review
+```
+
+根據專案 CLAUDE.md 動態產生檢查項目，對程式碼進行品質審查。
+
+### 8. 結案
+
+```
+/feature-close
+```
+
+從 Git diff 自動擷取分層變更摘要、更新 Notion 頁面、同步功能設計庫，並依專案 Git Flow 提示後續合併步驟。
+
 ## Skill 清單
 
 | Skill | 說明 |
