@@ -9,7 +9,7 @@
 claude plugin install Notion
 
 # 加入 Marketplace → 安裝 → 啟用（用 && 確保依序執行）
-claude plugin marketplace add mark22013333/bug-workflow && \
+claude plugin marketplace add mark22013333/crew && \
 claude plugin install bug-workflow && \
 claude plugin install feature-workflow && \
 claude plugin enable bug-workflow && \
@@ -88,7 +88,7 @@ claude plugin install Notion
 ### Step 2：安裝並啟用 Workflow Plugin
 
 ```bash
-claude plugin marketplace add mark22013333/bug-workflow && \
+claude plugin marketplace add mark22013333/crew && \
 claude plugin install bug-workflow && \
 claude plugin install feature-workflow && \
 claude plugin enable bug-workflow && \

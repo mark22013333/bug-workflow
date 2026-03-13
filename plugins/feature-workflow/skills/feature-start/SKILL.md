@@ -51,7 +51,7 @@ Git Repo 識別碼解析規則：
 - 從 `git remote get-url origin` 取得遠端 URL（支援 HTTPS / SSH）
 - 去除 `.git` 後綴
 - Git host 含 `intumit`（公司 GitLab）→ 只取 `{group}/{repo}`，例如 `FUB03P2402/PushAPIService`
-- 其他（GitHub 等）→ 加上 host：`{host}/{group}/{repo}`，例如 `github.com/mark22013333/bug-workflow`
+- 其他（GitHub 等）→ 加上 host：`{host}/{group}/{repo}`，例如 `github.com/mark22013333/crew`
 
 **自動專案對應邏輯**：
 

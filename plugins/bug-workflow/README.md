@@ -35,7 +35,7 @@
 ## 安裝
 
 ```bash
-claude plugin marketplace add mark22013333/bug-workflow && \
+claude plugin marketplace add mark22013333/crew && \
 claude plugin install bug-workflow && \
 claude plugin enable bug-workflow
 ```

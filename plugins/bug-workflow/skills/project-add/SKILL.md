@@ -50,7 +50,7 @@ git branch --show-current 2>/dev/null || echo ""
 
 - 去掉 `.git` 後綴（若有）
 - Git host 含 `intumit`（公司 GitLab）→ 只取 `{group}/{repo}`，例如 `FUB03P2402/PushAPIService`
-- 其他（GitHub 等）→ 加上 host：`{host}/{group}/{repo}`，例如 `github.com/mark22013333/bug-workflow`
+- 其他（GitHub 等）→ 加上 host：`{host}/{group}/{repo}`，例如 `github.com/mark22013333/crew`
 - 同時支援 HTTPS（`https://gitlab.intumit.com/FUB03P2402/PushAPIService.git`）和 SSH（`git@gitlab.intumit.com:FUB03P2402/PushAPIService.git`）格式
 
 ### 2. 檢查是否已存在
