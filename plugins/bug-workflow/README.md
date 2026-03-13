@@ -24,7 +24,7 @@
 2. **Notion Workspace** — 需有以下資料庫（或由 `/bug-setup` 引導建立）：
    - **任務追蹤工具**：Bug 生命週期管理（主要資料庫）
    - **Bug 知識庫**（選用）：精簡索引，結案時自動同步
-   - **專案資料庫**：管理專案與本機路徑對應
+   - **專案資料庫**：管理專案對應
 
 3. **Notion 權限** — Claude Code 需授權以下 Notion 工具：
    - `notion-search`、`notion-fetch`（搜尋與讀取）
@@ -79,7 +79,7 @@ claude plugin update bug-workflow@company-marketplace
 
 ## 跨專案支援
 
-Plugin 透過 `pwd` 自動偵測當前工作目錄，比對 Notion 專案資料庫中的「本機路徑」欄位，自動關聯到正確的專案。
+Plugin 透過 `git remote get-url origin` 自動偵測 Git Repo，比對 Notion 專案資料庫中的「Git Repo」欄位，自動關聯到正確的專案。
 
 在不同專案目錄下執行 `/bug-start`，會自動對應不同的 Notion 專案，無需手動切換。
 
@@ -98,7 +98,7 @@ Skill 執行時會依序檢查公司 → 個人路徑，讀取第一個找到的
 
 設定檔包含：
 - Notion 資料庫 Data Source ID
-- 專案路徑對應表
+- 專案對應表
 - 欄位對照表
 
 可手動編輯此檔案，或透過 `/bug-setup` 重新設定。

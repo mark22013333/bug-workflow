@@ -337,7 +337,7 @@ API 路徑、回傳格式、錯誤處理必須遵循專案既有慣例。
 
 ## 執行步驟
 1. 讀取設定檔（~/.claude-company/feature-workflow-config.md 或 ~/.claude/feature-workflow-config.md）
-2. 從設定檔的「專案路徑對應」表取得當前專案的技術棧 ID
+2. 從設定檔的「專案對應」表取得當前專案的技術棧 ID
 3. 使用 notion-fetch 取得功能頁面完整內容（URL: {Notion 頁面 URL}），擷取：
    - 「🗄️ 資料庫設計」（CREATE TABLE）
    - 「🏗️ 架構設計」（類別清單、介面定義）

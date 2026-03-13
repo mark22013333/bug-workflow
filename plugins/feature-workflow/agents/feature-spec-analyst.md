@@ -19,7 +19,7 @@ model: opus
 
 ### 1. 理解專案上下文
 
-- 讀取專案 CLAUDE.md（`pwd` 下最近的 CLAUDE.md）
+- 讀取專案 CLAUDE.md（當前專案目錄下最近的 CLAUDE.md）
 - 識別：
   - 技術棧（Spring MVC / Spring Boot / 其他）
   - 分層架構（Controller → Service → DAO/Repository）

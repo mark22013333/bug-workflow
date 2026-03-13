@@ -13,13 +13,18 @@
 | 功能設計庫 | `<待填入>` | 設計文件索引（結案同步） |
 | 專案資料庫 | `<待填入>` | 專案 Relation 來源 |
 
-## 專案路徑對應
+## 專案對應
 
-Skill 透過 `pwd` 取得當前工作目錄，以前綴匹配方式自動對應 Notion 專案。
+Skill 透過 `git remote get-url origin` 取得 Git 遠端 URL，解析為識別碼後精確匹配對應的 Notion 專案。
 
-| Notion 專案名稱 | 本機路徑 | 技術棧 | 說明 |
+**識別碼解析規則**：
+- 公司 GitLab（host 含 `intumit`）：`{group}/{repo}`（如 `FUB03P2402/PushAPIService`）
+- 外部（GitHub 等）：`{host}/{group}/{repo}`（如 `github.com/org/repo`）
+- 自動去除 `.git` 後綴，支援 HTTPS / SSH 格式
+
+| Notion 專案名稱 | Git Repo | 技術棧 | 說明 |
 |----------------|----------|--------|------|
-| （範例）我的專案 | `/Users/xxx/projects/my-project` | spring-boot-mybatis | 範例，請替換 |
+| （範例）我的專案 | `FUB03P2402/MyProject` | spring-boot-mybatis | 範例，請替換 |
 
 ## 技術棧定義
 

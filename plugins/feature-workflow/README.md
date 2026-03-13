@@ -295,7 +295,7 @@ Opus Agent 掃描專案現有程式碼學習風格，產生 POJO、Mapper、Serv
 ## 與 bug-workflow 的關係
 
 - 共用「任務追蹤工具」和「專案資料庫」Notion 資料庫
-- setup 自動匯入 bug-workflow 的共用 ID 和專案路徑
+- setup 自動匯入 bug-workflow 的共用 ID 和專案對應
 - 互不干擾，可同時使用
 
 ## 授權

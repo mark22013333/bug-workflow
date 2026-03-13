@@ -32,7 +32,7 @@ description: 使用 Agent(opus) 分析需求並產出完整技術規格書，寫
 
 使用與 feature-update 相同的定位邏輯：
 1. 讀取設定檔，取得「任務追蹤工具」Data Source ID
-2. 取得當前 `pwd` 和 Git branch
+2. 取得 Git Repo 識別碼（從 `git remote get-url origin` 解析）和 Git branch
 3. 搜尋 Notion 中狀態為「進行中」、任務類型為「💬 功能要求」的條目
 4. 優先匹配：Git branch → 單一候選 → 專案篩選 → 互動式選擇
 
@@ -57,7 +57,7 @@ description: 使用 Agent(opus) 分析需求並產出完整技術規格書，寫
 
 #### 3-2. 技術棧資訊
 
-從設定檔的「專案路徑對應」表取得當前專案的技術棧 ID。
+從設定檔的「專案對應」表取得當前專案的技術棧 ID。
 
 #### 3-3. 現有類似功能程式碼
 

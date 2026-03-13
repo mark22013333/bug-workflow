@@ -64,7 +64,7 @@ claude plugin enable feature-workflow
 1. **Claude Code** — [安裝指南](https://docs.anthropic.com/en/docs/claude-code)
 2. **Notion Workspace** — 需有以下資料庫（或由 setup 引導建立）：
    - **任務追蹤工具**：Bug / 功能 生命週期管理（兩個 Plugin 共用）
-   - **專案資料庫**：管理專案與本機路徑對應（兩個 Plugin 共用）
+   - **專案資料庫**：管理專案對應（兩個 Plugin 共用）
    - **Bug 知識庫**（選用）：Bug 精簡索引
    - **功能設計庫**（選用）：設計文件索引
 
@@ -129,7 +129,7 @@ claude plugin update feature-workflow@company-marketplace
 
 ## 跨專案支援
 
-Plugin 透過 `pwd` 自動偵測當前工作目錄，比對設定檔中的「本機路徑」前綴，自動關聯到正確的 Notion 專案。
+Plugin 透過 `git remote get-url origin` 自動偵測 Git Repo 識別碼（如 `FUB03P2402/PushAPIService`），比對設定檔中的「Git Repo」欄位，自動關聯到正確的 Notion 專案。
 
 在不同專案目錄下執行指令，會自動對應不同的 Notion 專案，無需手動切換。
 

@@ -1,6 +1,6 @@
 ---
 name: feature-setup
-description: Feature Workflow 首次設定引導。自動偵測 Notion 資料庫、匯入 bug-workflow 共用 ID、設定專案路徑與技術棧、可選安裝獨立 Agent。當使用者提到「feature-setup」、「設定 feature workflow」、「初始化 feature」時觸發此 Skill。
+description: Feature Workflow 首次設定引導。自動偵測 Notion 資料庫、匯入 bug-workflow 共用 ID、設定專案對應與技術棧、可選安裝獨立 Agent。當使用者提到「feature-setup」、「設定 feature workflow」、「初始化 feature」時觸發此 Skill。
 ---
 
 # feature-setup — Feature Workflow 首次設定
@@ -39,13 +39,13 @@ description: Feature Workflow 首次設定引導。自動偵測 Notion 資料庫
 若找到 bug-workflow 設定檔：
 1. 擷取「任務追蹤工具」Data Source ID → 直接匯入（兩個 workflow 共用同一個任務追蹤工具）
 2. 擷取「專案資料庫」Data Source ID → 直接匯入
-3. 擷取「專案路徑對應」表 → 作為基礎，後續補充技術棧欄位
+3. 擷取「專案對應」表 → 作為基礎，後續補充技術棧欄位
 4. 向使用者顯示：
    ```
    已從 bug-workflow 匯入共用設定：
      ✅ 任務追蹤工具：1d8a401b-...
      ✅ 專案資料庫：f67699b6-...
-     ✅ 專案路徑對應：2 個專案
+     ✅ 專案對應：2 個專案
    ```
 
 若未找到 → 進入步驟 3 完整設定。
@@ -107,9 +107,8 @@ description: Feature Workflow 首次設定引導。自動偵測 Notion 資料庫
 | 欄位 | 類型 | 說明 | 必要性 |
 |------|------|------|--------|
 | 專案名稱 | Title | 顯示名稱 | 必要 |
-| 本機路徑 | Text | `pwd` 匹配用 | 必要 |
+| Git Repo | Text | Git 遠端倉庫識別碼（如 `FUB03P2402/PushAPIService`） | 必要 |
 | 技術棧 | Select | scaffold 用（`spring-mvc-mybatis` 等） | 必要（feature-workflow） |
-| Git Repo | URL | Git 遠端倉庫 | 建議 |
 | SIT 主機 | Text | SIT 部署主機資訊 | 選用 |
 | UAT 主機 | Text | UAT 部署主機資訊 | 選用 |
 | 正式環境主機 | Text | 正式環境部署主機資訊 | 選用 |
@@ -120,17 +119,31 @@ description: Feature Workflow 首次設定引導。自動偵測 Notion 資料庫
 **情境 A：找到現有資料庫** → 驗證欄位，缺少的詢問是否新增。
 **情境 B：找不到** → 詢問使用者建立新的或指定現有（流程同 bug-setup 的 2-3）。
 
-### 4. 設定專案路徑對應 + 技術棧
+### 4. 設定專案對應 + 技術棧
 
 #### 4-1. 自動偵測環境資訊
 
-取得當前工作目錄和 Git 資訊：
+取得 Git 遠端 URL 並解析為識別碼：
 
 ```bash
-pwd
+# Git remote URL（自動偵測）
 git remote get-url origin 2>/dev/null || echo ""
+
+# 分支名稱
 git branch --show-current 2>/dev/null || echo ""
+
+# 當前工作目錄（備用，非 Git repo 時使用）
+pwd
 ```
+
+**Git Repo 識別碼解析規則**：
+1. 執行 `git remote get-url origin`
+2. 解析為 Git Repo 識別碼：
+   - host 含 `intumit`（公司 GitLab）→ `{group}/{repo}`（如 `FUB03P2402/PushAPIService`）
+   - 其他（GitHub 等）→ `{host}/{group}/{repo}`（如 `github.com/org/repo`）
+   - 自動去除 `.git` 後綴，支援 HTTPS / SSH 格式
+3. 在設定檔「專案對應」表中精確匹配「Git Repo」欄位
+4. 若不在 Git repo 或匹配失敗 → 進入互動式選擇
 
 #### 4-2. 技術棧自動偵測
 
@@ -143,17 +156,17 @@ git branch --show-current 2>/dev/null || echo ""
 
 #### 4-3. 匹配或建立專案條目
 
-**若已從 bug-workflow 匯入專案路徑對應**：
+**若已從 bug-workflow 匯入專案對應**：
 
 列出已匯入的專案，補充技術棧：
 ```
-已匯入的專案路徑對應：
+已匯入的專案對應：
 
-1. 北市府-TPE01P2101 → /Users/cheng/IdeaProjects/Taipei/LineBC
+1. 北市府-TPE01P2101 → TPE01P2101/LineBC
    偵測到技術棧：spring-mvc-mybatis（pom.xml 含 spring-webmvc 4.x + mybatis + tk.mybatis）
    確認使用此技術棧？[Y/n]
 
-2. FIA01P2403 WCS → /Users/cheng/IdeaProjects/cht
+2. FIA01P2403 WCS → FUB03P2402/WCS
    偵測到技術棧：spring-boot-mybatis（pom.xml 含 spring-boot-starter + mybatis-spring-boot）
    確認使用此技術棧？[Y/n]
 ```
@@ -162,7 +175,7 @@ git branch --show-current 2>/dev/null || echo ""
 
 **若未匯入**：
 
-搜尋專案資料庫中的所有專案，以 `pwd` 匹配：
+搜尋專案資料庫中的所有專案，以 Git Repo 識別碼精確匹配：
 
 - **已匹配** → 確認專案資訊，補充技術棧和缺少的欄位
 - **未匹配** → 列出專案供選擇，或建立新專案
@@ -173,9 +186,8 @@ git branch --show-current 2>/dev/null || echo ""
 建立新專案，請填寫以下資訊：
 
   專案名稱：（必填）
-  本機路徑：/Users/cheng/IdeaProjects/Taipei/LineBC（已自動偵測）
+  Git Repo：TPE01P2101/LineBC（已自動偵測，Enter 確認或修改）
   技術棧：spring-mvc-mybatis（已自動偵測，Enter 確認或修改）
-  Git Repo：https://github.com/xxx/yyy.git（已自動偵測，Enter 確認或修改）
   狀態：進行中（預設）
 
 以下欄位可現在填寫，或稍後在 Notion 頁面補充：
@@ -226,8 +238,8 @@ Feature Workflow 設定完成！
   ✅ 專案資料庫：f67699b6-...
 
 已設定的專案對應：
-  • 北市府-TPE01P2101 → /Users/.../LineBC [spring-mvc-mybatis]
-  • FIA01P2403 WCS → /Users/.../cht [spring-boot-mybatis]
+  • 北市府-TPE01P2101 → TPE01P2101/LineBC [spring-mvc-mybatis]
+  • FIA01P2403 WCS → FUB03P2402/WCS [spring-boot-mybatis]
 
 Agent 安裝：已安裝 4 個 Agent 到 ~/.claude-company/agents/
 
@@ -255,5 +267,6 @@ Agent 安裝：已安裝 4 個 Agent 到 ~/.claude-company/agents/
 - **使用者想新增更多專案對應**：可重複執行 `/feature-setup`，選擇「更新專案對應」
 - **設定檔被意外刪除**：重新執行 `/feature-setup` 即可重建
 - **Agent 目標目錄已有同名檔案**：詢問是否覆蓋
-- **專案資料庫已有欄位但名稱不同**（如「路徑」vs「本機路徑」）：列出現有欄位讓使用者選擇對應
+- **專案資料庫已有欄位但名稱不同**（如「Repo」vs「Git Repo」）：列出現有欄位讓使用者選擇對應
+- **不在 Git repo 中**：無法自動偵測識別碼，進入互動式選擇流程讓使用者手動指定專案
 - **Git remote 不存在**：Git Repo 欄位留空，使用者可稍後補填

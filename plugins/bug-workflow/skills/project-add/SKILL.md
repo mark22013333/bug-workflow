@@ -1,11 +1,11 @@
 ---
 name: project-add
-description: 將當前專案新增到 Notion 專案資料庫，或更新已存在的專案資訊。自動偵測路徑、Git、技術棧，同步更新 bug-workflow 與 feature-workflow 設定檔。當使用者提到「新增專案」、「加專案」、「project-add」、「設定專案」、「註冊專案」時觸發此 Skill。
+description: 將當前專案新增到 Notion 專案資料庫，或更新已存在的專案資訊。自動偵測 Git Repo、技術棧，同步更新 bug-workflow 與 feature-workflow 設定檔。當使用者提到「新增專案」、「加專案」、「project-add」、「設定專案」、「註冊專案」時觸發此 Skill。
 ---
 
 # project-add — 新增或更新 Notion 專案
 
-快速將當前工作目錄的專案新增到 Notion 專案資料庫，並同步更新所有 Workflow 設定檔的專案路徑對應。
+快速將當前 Git 倉庫的專案新增到 Notion 專案資料庫，並同步更新所有 Workflow 設定檔的專案對應。
 
 ---
 
@@ -46,15 +46,22 @@ git remote get-url origin 2>/dev/null || echo ""
 git branch --show-current 2>/dev/null || echo ""
 ```
 
+**解析 Git Repo 識別碼**：從 `git remote get-url origin` 的結果解析，規則如下：
+
+- 去掉 `.git` 後綴（若有）
+- Git host 含 `intumit`（公司 GitLab）→ 只取 `{group}/{repo}`，例如 `FUB03P2402/PushAPIService`
+- 其他（GitHub 等）→ 加上 host：`{host}/{group}/{repo}`，例如 `github.com/mark22013333/bug-workflow`
+- 同時支援 HTTPS（`https://gitlab.intumit.com/FUB03P2402/PushAPIService.git`）和 SSH（`git@gitlab.intumit.com:FUB03P2402/PushAPIService.git`）格式
+
 ### 2. 檢查是否已存在
 
-讀取設定檔中的「專案路徑對應」表，檢查當前 `pwd` 是否已有對應的專案。
+讀取設定檔中的「專案對應」表，檢查當前 Git Repo 識別碼是否已有對應的專案。
 
 **已存在** → 顯示現有資訊，詢問：
 ```
 此專案已在設定檔中：
   專案名稱：北市府-TPE01P2101
-  本機路徑：/Users/cheng/IdeaProjects/Taipei/LineBC
+  Git Repo：FUB03P2402/LineBC
 
 請選擇：
 1. 更新專案資訊（Notion + 設定檔）
@@ -67,14 +74,14 @@ git branch --show-current 2>/dev/null || echo ""
 
 使用 `notion-search` 或直接用 Data Source ID 查詢「專案資料庫」中的所有專案。
 
-**情境 A：Notion 中找到匹配的專案**（「本機路徑」欄位匹配 `pwd`）
+**情境 A：Notion 中找到匹配的專案**（「Git Repo」欄位匹配識別碼）
 
 ```
 偵測到 Notion 專案資料庫中已有匹配的專案：
   專案名稱：北市府-TPE01P2101
-  本機路徑：/Users/cheng/IdeaProjects/Taipei/LineBC
+  Git Repo：FUB03P2402/LineBC
 
-是否將此專案加入設定檔的路徑對應？[Y/n]
+是否將此專案加入設定檔的專案對應？[Y/n]
 ```
 
 若確認 → 跳到步驟 5（更新設定檔）。
@@ -84,16 +91,16 @@ git branch --show-current 2>/dev/null || echo ""
 ```
 Notion 專案資料庫中有以下專案：
 
-1. 北市府-TPE01P2101（路徑：/Users/cheng/IdeaProjects/Taipei/LineBC）
-2. FIA01P2403 WCS（路徑：/Users/cheng/IdeaProjects/cht）
-3. 專案 C（路徑：未設定）
+1. 北市府-TPE01P2101（Git Repo：FUB03P2402/LineBC）
+2. FIA01P2403 WCS（Git Repo：FUB03P2402/WCS）
+3. 專案 C（Git Repo：未設定）
 
 0. 建立新專案
 
 請選擇要對應的專案（輸入編號）：
 ```
 
-選擇現有專案 → 將 `pwd` 寫入該專案的「本機路徑」欄位（`notion-update-page`），跳到步驟 5。
+選擇現有專案 → 將 Git Repo 識別碼寫入該專案的「Git Repo」欄位（`notion-update-page`），跳到步驟 5。
 選擇建立新專案 → 繼續步驟 4。
 
 **情境 C：Notion 專案資料庫為空或未找到匹配** → 繼續步驟 4。
@@ -115,9 +122,8 @@ Notion 專案資料庫中有以下專案：
 建立新專案，請填寫以下資訊：
 
   專案名稱：（必填）
-  本機路徑：/Users/cheng/IdeaProjects/NewProject（已自動偵測）
+  Git Repo：FUB03P2402/NewProject（已自動偵測）
   技術棧：spring-boot-mybatis（已自動偵測，Enter 確認或修改）
-  Git Repo：https://github.com/xxx/yyy.git（已自動偵測，Enter 確認或修改）
   狀態：進行中（預設）
 
 以下欄位可現在填寫，或稍後在 Notion 頁面補充：
@@ -135,9 +141,8 @@ Notion 專案資料庫中有以下專案：
 | 欄位 | 值 |
 |------|-----|
 | 專案名稱 | 使用者填入 |
-| 本機路徑 | `pwd` |
+| Git Repo | Git Repo 識別碼（從 `git remote get-url origin` 解析） |
 | 技術棧 | 自動偵測或使用者指定 |
-| Git Repo | `git remote get-url origin` |
 | 狀態 | `進行中`（預設） |
 | SIT 主機 | 使用者填入（可空） |
 | UAT 主機 | 使用者填入（可空） |
@@ -147,7 +152,7 @@ Notion 專案資料庫中有以下專案：
 
 ### 5. 同步更新所有設定檔
 
-**重要**：必須同步更新所有存在的 Workflow 設定檔，確保 bug-workflow 和 feature-workflow 共用相同的專案路徑對應。
+**重要**：必須同步更新所有存在的 Workflow 設定檔，確保 bug-workflow 和 feature-workflow 共用相同的專案對應。
 
 依序檢查並更新以下設定檔（所有存在的都要更新）：
 
@@ -156,16 +161,16 @@ Notion 專案資料庫中有以下專案：
 3. `~/.claude-company/feature-workflow-config.md`
 4. `~/.claude/feature-workflow-config.md`
 
-在每個設定檔的「專案路徑對應」表中新增一列：
+在每個設定檔的「專案對應」表中新增一列：
 
 ```markdown
-| {專案名稱} | `{本機路徑}` | {說明} |
+| {專案名稱} | `{Git Repo 識別碼}` | {說明} |
 ```
 
 若是 feature-workflow 設定檔，還需包含技術棧欄位：
 
 ```markdown
-| {專案名稱} | `{本機路徑}` | {技術棧} | {說明} |
+| {專案名稱} | `{Git Repo 識別碼}` | {技術棧} | {說明} |
 ```
 
 **更新已存在的專案**（步驟 2 選擇「更新」時）：
@@ -178,9 +183,8 @@ Notion 專案資料庫中有以下專案：
 專案已新增到 Notion 專案資料庫！
 
   專案名稱：XXX
-  本機路徑：/Users/cheng/IdeaProjects/NewProject
+  Git Repo：FUB03P2402/NewProject
   技術棧：spring-boot-mybatis
-  Git Repo：https://github.com/xxx/yyy.git
 
 已同步更新設定檔：
   ✅ ~/.claude-company/bug-workflow-config.md
@@ -198,8 +202,7 @@ Notion 專案資料庫中有以下專案：
 - **設定檔不存在**：提示使用者先執行 `/bug-setup` 或 `/feature-setup`
 - **專案資料庫 Data Source ID 不存在**：提示使用者重新執行 setup
 - **已在設定檔中但 Notion 中找不到**：提示可能是 Notion 頁面被刪除，詢問是否重新建立
-- **不在 Git repo 中**：Git Repo 欄位留空，其餘正常執行
-- **`pwd` 匹配到多個專案**（子目錄關係）：列出候選讓使用者選擇
+- **不在 Git repo 中**：提示使用者需在 Git 倉庫目錄下執行，或手動輸入 Git Repo 識別碼
 - **Notion API 失敗**：顯示錯誤訊息，已填入的設定檔變更仍保留
 - **只裝了其中一個 workflow**：僅更新該 workflow 的設定檔，不報錯
 - **技術棧無法自動偵測**（非 Java 專案等）：技術棧欄位留空或使用者自訂

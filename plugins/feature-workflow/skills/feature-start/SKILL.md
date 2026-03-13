@@ -34,25 +34,34 @@ description: 在 Notion「任務追蹤工具」建立功能需求條目並填入
 
 ### 2. 偵測環境資訊（自動專案對應）
 
-取得 branch 名稱和當前工作目錄：
+取得 branch 名稱、當前工作目錄及 Git Repo 識別碼：
 
 ```bash
 # 分支名稱
 git branch --show-current 2>/dev/null || echo ""
 
-# 當前工作目錄（用於自動對應 Notion 專案）
+# 當前工作目錄
 pwd
+
+# Git 遠端 URL（用於自動對應 Notion 專案）
+git remote get-url origin 2>/dev/null || echo ""
 ```
+
+Git Repo 識別碼解析規則：
+- 從 `git remote get-url origin` 取得遠端 URL（支援 HTTPS / SSH）
+- 去除 `.git` 後綴
+- Git host 含 `intumit`（公司 GitLab）→ 只取 `{group}/{repo}`，例如 `FUB03P2402/PushAPIService`
+- 其他（GitHub 等）→ 加上 host：`{host}/{group}/{repo}`，例如 `github.com/mark22013333/bug-workflow`
 
 **自動專案對應邏輯**：
 
-1. 取得當前工作目錄路徑
-2. 讀取設定檔中「專案路徑對應」表，找「本機路徑」與當前路徑匹配的專案
-3. 匹配規則：當前路徑以「本機路徑」欄位值為前綴即匹配（支援子目錄）
+1. 執行 `git remote get-url origin` 取得 Git 遠端 URL
+2. 解析為 Git Repo 識別碼（host 含 `intumit` → `{group}/{repo}`，其他 → `{host}/{group}/{repo}`，去除 `.git` 後綴）
+3. 讀取設定檔中「專案對應」表，精確匹配「Git Repo」欄位
 4. 若匹配成功 → 自動選定該專案，不再詢問
-5. 若無匹配 → 進入互動式選擇
+5. 若不在 Git repo 或匹配失敗 → 進入互動式選擇
 
-若設定檔中無對應，也可用 `notion-search` 搜尋 Notion「專案資料庫」（Data Source ID 見設定檔），找「本機路徑」欄位與當前路徑匹配的專案。
+若設定檔中無對應，也可用 `notion-search` 搜尋 Notion「專案資料庫」（Data Source ID 見設定檔），找「Git Repo」欄位與當前識別碼匹配的專案。
 
 ### 3. 互動式補充資訊
 
@@ -177,7 +186,7 @@ pwd
 ## 邊界情況
 
 - **設定檔不存在**：提示使用者先執行 `/feature-setup` 完成初始設定
-- **不在 Git repo 中**：跳過分支偵測和建立，修復分支留空；仍可透過 `pwd` 匹配專案
+- **不在 Git repo 中**：跳過分支與專案自動偵測，修復分支留空；進入互動式選擇專案
 - **使用者未指定專案**：列出進行中的專案供選擇；若只有一個專案則自動選定
 - **Notion API 失敗**：顯示錯誤訊息，建議使用者手動在 Notion 建立
 - **分支名稱衝突**：提示使用者自訂名稱或切換到現有分支
