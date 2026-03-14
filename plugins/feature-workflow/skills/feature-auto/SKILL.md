@@ -173,10 +173,9 @@ Leader 不啟動 Teammate，直接完成：
 
 ### 1-4. 環境檢查
 
-檢查是否在 tmux session 中：
-- **是** → 告知使用者「偵測到 tmux，並行階段將使用 Split Pane」
-- **否 + tmux 已安裝** → 提示「建議在 tmux session 中執行以獲得 Split Pane（`tmux new-session -s feature`）。要繼續使用 in-process 模式嗎？」
-- **tmux 未安裝** → 不提示，使用 in-process 模式
+**不要手動檢查或詢問 teammateMode 設定**。Claude Code 會根據 settings.json 中的 `teammateMode` 設定和當前環境自動決定顯示模式。Leader 只需確認是否在 tmux 中，作為資訊提示：
+- **已在 tmux** → 簡短告知「tmux 環境就緒」（不需詢問）
+- **未在 tmux** → 簡短告知「使用 in-process 模式（Shift+Down 切換 Teammate）」（不需詢問）
 
 ---
 
