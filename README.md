@@ -61,7 +61,7 @@ claude plugin enable feature-workflow
 
 ## 前置條件
 
-1. **Claude Code** — [安裝指南](https://docs.anthropic.com/en/docs/claude-code)
+1. **Claude Code** — <a href="https://docs.anthropic.com/en/docs/claude-code" target="_blank">安裝指南</a>
 2. **Notion Workspace** — 需有以下資料庫（或由 setup 引導建立）：
    - **任務追蹤工具**：Bug / 功能 生命週期管理（兩個 Plugin 共用）
    - **專案資料庫**：管理專案對應（兩個 Plugin 共用）
@@ -108,7 +108,7 @@ claude plugin update feature-workflow@company-marketplace
 
 更新完成後**重啟 Claude Code** 使新版生效。
 
-> 若 `update` 顯示已是最新但功能未生效，可先卸載再重裝：
+> 若 `update` 顯示已是最新但功能未生效，可先移除再重裝：
 > ```bash
 > claude plugin uninstall feature-workflow@company-marketplace && \
 > claude plugin install feature-workflow@company-marketplace
