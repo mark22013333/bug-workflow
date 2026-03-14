@@ -1,11 +1,11 @@
 ---
 name: feature-auto
-description: 讀取本地規格書檔案，以 AI Agent Team 協作模式自動依序執行 feature-start → spec → db → arch → scaffold 完成功能建立。當使用者提到「feature-auto」、「自動開發」、「讀取規格書」、「匯入規格」時觸發此 Skill。
+description: 讀取本地規格書檔案，以 Leader 委派模式自動依序執行 feature-start → spec → db → arch → scaffold 完成功能建立。當使用者提到「feature-auto」、「自動開發」、「讀取規格書」、「匯入規格」時觸發此 Skill。
 ---
 
-# feature-auto — 規格書驅動的 Agent Team 自動化功能建立
+# feature-auto — 規格書驅動的 Leader 委派自動化功能建立
 
-讀取本地規格書檔案（Markdown / 純文字），以 **Agent Team 協作模式**自動依序執行 feature workflow 的各階段，從建立 Notion 條目到產生程式碼骨架，一氣呵成。
+讀取本地規格書檔案（Markdown / 純文字），以 **Leader 委派模式**自動依序執行 feature workflow 的各階段，從建立 Notion 條目到產生程式碼骨架，一氣呵成。
 
 ---
 
@@ -115,40 +115,52 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 
 ---
 
-## Agent Team 架構
+## Leader 委派架構
 
-本 Skill 採用 **Leader + Teammates** 的 Agent Team 協作模式。Leader（你自己）負責讀取規格書、建立團隊、分派任務並協調流程；每個 Teammate 是專責特定階段的獨立 Agent。
+本 Skill 採用 **Leader 委派模式**。Leader（你自己）是唯一的協調者，負責：
+1. 讀取規格書並建立 Notion 條目
+2. 依序啟動每個 Teammate（Subagent）
+3. **收集每個 Teammate 的完整產出**
+4. **將累積的上下文直接注入下一個 Teammate 的 prompt**（不依賴 Notion 讀取）
+5. 彙整所有結果，產出總結報告
 
-### 團隊角色
-
-```
-┌─────────────────────────────────────────────────────┐
-│  Leader（你自己）                                      │
-│  職責：讀取規格書、建立團隊、分派任務、監控進度、彙整結果    │
-└──────┬──────────┬──────────┬──────────┬──────────────┘
-       │          │          │          │
-       ▼          ▼          ▼          ▼
-  ┌─────────┐ ┌────────┐ ┌────────┐ ┌──────────┐
-  │ spec    │ │ db     │ │ arch   │ │ scaffold │
-  │ analyst │ │designer│ │designer│ │ generator│
-  │         │ │        │ │        │ │          │
-  │ 規格分析 │ │DB 設計  │ │架構設計 │ │程式碼產生  │
-  └─────────┘ └────────┘ └────────┘ └──────────┘
-```
-
-### 執行流程（依賴鏈）
-
-Teammates 之間存在依賴關係，必須依序執行：
+### 資訊流
 
 ```
-spec-analyst → db-designer → arch-designer → code-generator
-     │              │              │               │
-     │    讀取 spec 產出   讀取 spec+db 產出  讀取全部設計產出
-     │              │              │               │
-     ▼              ▼              ▼               ▼
-  技術規格書      DB 設計文件     架構設計文件      程式碼骨架
-  (寫入 Notion)  (寫入 Notion)  (寫入 Notion)   (寫入檔案+Notion)
+Leader
+  │
+  │  ① 讀取規格書 + 執行 feature-start
+  │     保存：{規格書內容}、{Notion 頁面 URL}
+  │
+  ├──► spec-analyst
+  │     輸入：規格書內容
+  │     輸出：技術規格書（寫入 Notion + 完整內容回傳 Leader）
+  │     Leader 保存：{spec_output}
+  │
+  ├──► db-designer
+  │     輸入：規格書 + spec_output（Leader 直接傳入）
+  │     輸出：DB 設計（寫入 Notion + 完整內容回傳 Leader）
+  │     Leader 保存：{db_output}
+  │
+  ├──► arch-designer
+  │     輸入：規格書 + spec_output + db_output（Leader 直接傳入）
+  │     輸出：架構設計（寫入 Notion + 完整內容回傳 Leader）
+  │     Leader 保存：{arch_output}
+  │
+  └──► code-generator
+        輸入：spec_output + db_output + arch_output（Leader 直接傳入）
+        輸出：程式碼骨架（寫入檔案 + Notion + 檔案清單回傳 Leader）
 ```
+
+### 與舊模式的差異
+
+| | 舊模式（Notion 中繼） | 新模式（Leader 委派） |
+|--|---------------------|-------------------|
+| **下游 Agent 如何取得上游產出** | 自己去 Notion fetch | Leader 直接注入 prompt |
+| **Notion 的角色** | 中繼站（讀 + 寫） | 持久化儲存（僅寫入） |
+| **資訊完整度** | 取決於 Agent 解析 Notion 的能力 | Leader 控制，零損失 |
+| **Notion API 依賴** | 每階段 2 次（讀 + 寫） | 每階段 1 次（僅寫入） |
+| **失敗容錯** | Notion 讀取失敗 = 下游斷鏈 | 不受 Notion 讀取影響 |
 
 ---
 
@@ -174,7 +186,7 @@ spec-analyst → db-designer → arch-designer → code-generator
 📄 規格書：doc/訂閱推播統計.md
 📝 功能名稱：訂閱推播統計報表
 📋 需求摘要：{前 3 行}
-🤖 執行模式：Agent Team（Leader + 4 Teammates）
+🤖 執行模式：Leader 委派（Leader + 4 Teammates）
 
 即將依序執行：
   1. ✅ feature-start   — Leader 建立 Notion 條目 + Git branch
@@ -196,15 +208,15 @@ Leader 直接執行此階段（不需 Teammate），使用 Skill tool 觸發 `/f
 - 優先順序：若規格書中未指定，使用預設「中」
 - 難度：若規格書中未指定，根據需求描述的複雜度自動判斷
 - Git branch：自動建立（從功能名稱產生英文簡寫）
-- 記錄 Notion 頁面 URL，供後續 Teammates 使用
+- **記錄 Notion 頁面 URL**，供後續 Teammates 寫入使用
 
-### 4. 建立 Agent Team
+### 4. 建立 Agent Team 並依序委派
 
 使用 **TeamCreate** 建立團隊。根據使用者指定的選項（`--skip`、`--stop-at`），僅建立需要的 Teammates。
 
-#### Teammate 定義
-
 每個 Teammate 使用 **Agent tool** 啟動，指定 `model: opus`。
+
+**Leader 在每個 Teammate 完成後，必須保存其完整產出內容，並在啟動下一個 Teammate 時注入 prompt。**
 
 ---
 
@@ -212,37 +224,50 @@ Leader 直接執行此階段（不需 Teammate），使用 Skill tool 觸發 `/f
 
 **啟動時機**：feature-start 完成後
 
+**Leader 注入的上下文**：規格書原始內容
+
 **Prompt**：
 
 ```
 你是一位資深技術規格分析師，負責此次功能開發的技術規格書產出。
 
 ## 你的任務
-讀取 Notion 功能頁面的需求描述，結合專案上下文，產出完整技術規格書並寫入 Notion「📐 技術規格」區塊。
+結合規格書需求與專案上下文，產出完整技術規格書，寫入 Notion 並將完整內容回傳。
 
 ## 規格書原始需求
 {規格書完整內容}
 
+## Notion 頁面 URL
+{Notion 頁面 URL}
+
 ## 執行步驟
 1. 讀取設定檔（~/.claude-company/feature-workflow-config.md 或 ~/.claude/feature-workflow-config.md）
-2. 使用 notion-fetch 取得功能頁面完整內容（URL: {Notion 頁面 URL}）
-3. 讀取當前專案的 CLAUDE.md，了解技術棧和架構慣例
-4. 使用 Glob/Grep 掃描專案中相關的 Controller 和 Service（1-2 個），了解 API 風格
-5. 產出技術規格書，包含：
+2. 讀取當前專案的 CLAUDE.md，了解技術棧和架構慣例
+3. 使用 Glob/Grep 掃描專案中相關的 Controller 和 Service（1-2 個），了解 API 風格
+4. 產出技術規格書，包含：
    - 功能範圍（In Scope / Out of Scope）
    - API 端點設計（表格：端點、Method、請求參數/Body、回傳格式、說明）
    - 業務邏輯規則（每個 API 的核心邏輯、前置驗證、處理流程、邊界條件）
    - 錯誤處理策略（表格：錯誤場景、處理方式、HTTP 狀態碼）
    - 分層決策（哪些邏輯放哪一層）
    - 效能需求（預期資料量、分頁、快取）
-6. 使用 notion-update-page 將規格寫入「📐 技術規格」區塊
-7. 使用 notion-update-page 更新開發階段 = 「規格設計」
+5. 使用 notion-update-page 將規格寫入「📐 技術規格」區塊
+6. 使用 notion-update-page 更新開發階段 = 「規格設計」
 
 API 路徑、回傳格式、錯誤處理必須遵循專案既有慣例。
 輸出使用繁體中文。
 
-完成後回報：產出了幾個 API、幾項業務規則。
+## 重要：回傳格式
+完成後，你必須回傳以下兩部分：
+1. **摘要**：產出了幾個 API、幾項業務規則（一行）
+2. **完整技術規格內容**：你寫入 Notion 的完整 Markdown 內容（用 ```markdown 包裹）
+
+Leader 需要你的完整產出來傳遞給下一階段的 Teammate。
 ```
+
+**Leader 收到回傳後**：
+- 解析摘要 → 顯示進度
+- 保存完整技術規格內容為 `{spec_output}`
 
 ---
 
@@ -250,37 +275,53 @@ API 路徑、回傳格式、錯誤處理必須遵循專案既有慣例。
 
 **啟動時機**：spec-analyst 完成後
 
+**Leader 注入的上下文**：規格書原始內容 + spec_output
+
 **Prompt**：
 
 ```
 你是一位資深資料庫設計師，負責此次功能開發的資料庫設計。
 
 ## 你的任務
-讀取 Notion 功能頁面的技術規格，設計資料表結構、索引和遷移 SQL，寫入 Notion「🗄️ 資料庫設計」區塊。
+根據技術規格設計資料表結構、索引和遷移 SQL，寫入 Notion 並將完整內容回傳。
 
 ## 規格書原始需求（參考）
 {規格書完整內容}
 
+## 前一階段產出：技術規格書（由 Leader 提供，無需從 Notion 讀取）
+{spec_output}
+
+## Notion 頁面 URL
+{Notion 頁面 URL}
+
 ## 執行步驟
 1. 讀取設定檔（~/.claude-company/feature-workflow-config.md 或 ~/.claude/feature-workflow-config.md）
-2. 使用 notion-fetch 取得功能頁面完整內容（URL: {Notion 頁面 URL}），擷取「📐 技術規格」區塊
-3. 讀取當前專案的 CLAUDE.md，識別 DB 類型（MSSQL / MySQL / PostgreSQL）
-4. 使用 Glob 掃描現有 Entity/POJO（2-3 個範本），了解命名慣例、公共欄位、註解風格
-5. 讀取 ~/.claude/rules/database.md（若存在），取得資料庫規範
-6. 設計資料庫結構，包含：
+2. 讀取當前專案的 CLAUDE.md，識別 DB 類型（MSSQL / MySQL / PostgreSQL）
+3. 使用 Glob 掃描現有 Entity/POJO（2-3 個範本），了解命名慣例、公共欄位、註解風格
+4. 讀取 ~/.claude/rules/database.md（若存在），取得資料庫規範
+5. 根據上方的技術規格書，設計資料庫結構，包含：
    - CREATE TABLE（正確的 DB 語法，含欄位註解和公共欄位）
    - CREATE INDEX（遵循專案命名慣例）
    - 範例資料 INSERT（3-5 筆）
    - Rollback SQL（DROP TABLE / DROP INDEX）
-7. 使用 notion-update-page 將 DB 設計寫入「🗄️ 資料庫設計」區塊
-8. 使用 notion-update-page 更新開發階段 = 「DB 設計」
-9. 使用 Write tool 將 SQL 輸出到 doc/{功能名稱}.sql
+6. 使用 notion-update-page 將 DB 設計寫入「🗄️ 資料庫設計」區塊
+7. 使用 notion-update-page 更新開發階段 = 「DB 設計」
+8. 使用 Write tool 將 SQL 輸出到 doc/{功能名稱}.sql
 
 命名慣例、資料型別、索引風格必須與現有表一致。
 輸出使用繁體中文。
 
-完成後回報：新增幾個表、幾個索引、SQL 檔案路徑。
+## 重要：回傳格式
+完成後，你必須回傳以下兩部分：
+1. **摘要**：新增幾個表、幾個索引、SQL 檔案路徑（一行）
+2. **完整 DB 設計內容**：你寫入 Notion 的完整 Markdown 內容（用 ```markdown 包裹）
+
+Leader 需要你的完整產出來傳遞給下一階段的 Teammate。
 ```
+
+**Leader 收到回傳後**：
+- 解析摘要 → 顯示進度
+- 保存完整 DB 設計內容為 `{db_output}`
 
 ---
 
@@ -288,38 +329,57 @@ API 路徑、回傳格式、錯誤處理必須遵循專案既有慣例。
 
 **啟動時機**：db-designer 完成後
 
+**Leader 注入的上下文**：規格書原始內容 + spec_output + db_output
+
 **Prompt**：
 
 ```
 你是一位資深後端架構設計師，負責此次功能開發的分層架構設計。
 
 ## 你的任務
-讀取 Notion 功能頁面的技術規格與 DB 設計，產出分層架構設計，寫入 Notion「🏗️ 架構設計」區塊。
+根據技術規格與 DB 設計，產出分層架構設計，寫入 Notion 並將完整內容回傳。
 
 ## 規格書原始需求（參考）
 {規格書完整內容}
 
+## 前一階段產出：技術規格書（由 Leader 提供，無需從 Notion 讀取）
+{spec_output}
+
+## 前一階段產出：資料庫設計（由 Leader 提供，無需從 Notion 讀取）
+{db_output}
+
+## Notion 頁面 URL
+{Notion 頁面 URL}
+
 ## 執行步驟
 1. 讀取設定檔（~/.claude-company/feature-workflow-config.md 或 ~/.claude/feature-workflow-config.md）
-2. 使用 notion-fetch 取得功能頁面完整內容（URL: {Notion 頁面 URL}），擷取「📐 技術規格」和「🗄️ 資料庫設計」區塊
-3. 讀取當前專案的 CLAUDE.md，識別架構模式和分層規則
-4. 使用 Glob 掃描專案 package 結構，識別各層位置和慣例
-5. 讀取 1-2 個現有功能的完整呼叫鏈（Controller → Service → DAO）
-6. 讀取 ~/.claude/rules/design-patterns.md（若存在）
-7. 產出架構設計，包含：
+2. 讀取當前專案的 CLAUDE.md，識別架構模式和分層規則
+3. 使用 Glob 掃描專案 package 結構，識別各層位置和慣例
+4. 讀取 1-2 個現有功能的完整呼叫鏈（Controller → Service → DAO）
+5. 讀取 ~/.claude/rules/design-patterns.md（若存在）
+6. 根據上方的技術規格和 DB 設計，產出架構設計，包含：
    - 分層架構圖（Mermaid 語法）
    - 類別/介面清單（表格，含完整 package 路徑和說明）
    - 每個 Service 介面的方法定義（method signature + Javadoc）
    - 設計模式選擇與理由
    - 層間依賴關係說明
-8. 使用 notion-update-page 將架構設計寫入「🏗️ 架構設計」區塊
-9. 使用 notion-update-page 更新開發階段 = 「架構設計」
+7. 使用 notion-update-page 將架構設計寫入「🏗️ 架構設計」區塊
+8. 使用 notion-update-page 更新開發階段 = 「架構設計」
 
 遵循專案已有的分層模式，不強加外部模式。
 輸出使用繁體中文。
 
-完成後回報：設計了幾個類別、使用了哪些設計模式。
+## 重要：回傳格式
+完成後，你必須回傳以下兩部分：
+1. **摘要**：設計了幾個類別、使用了哪些設計模式（一行）
+2. **完整架構設計內容**：你寫入 Notion 的完整 Markdown 內容（用 ```markdown 包裹）
+
+Leader 需要你的完整產出來傳遞給下一階段的 Teammate。
 ```
+
+**Leader 收到回傳後**：
+- 解析摘要 → 顯示進度
+- 保存完整架構設計內容為 `{arch_output}`
 
 ---
 
@@ -327,33 +387,43 @@ API 路徑、回傳格式、錯誤處理必須遵循專案既有慣例。
 
 **啟動時機**：arch-designer 完成後
 
+**Leader 注入的上下文**：spec_output + db_output + arch_output（不需要規格書原文，前三階段已涵蓋）
+
 **Prompt**：
 
 ```
 你是一位嚴謹的程式碼產生器。最重要的原則：產出的程式碼風格必須與專案現有程式碼完全一致。
 
 ## 你的任務
-讀取 Notion 功能頁面的 DB 設計與架構設計，按專案既有風格產生程式碼骨架。
+根據前面階段的設計產出，按專案既有風格產生程式碼骨架。
+
+## 前面階段產出：技術規格書（由 Leader 提供，無需從 Notion 讀取）
+{spec_output}
+
+## 前面階段產出：資料庫設計（由 Leader 提供，無需從 Notion 讀取）
+{db_output}
+
+## 前面階段產出：架構設計（由 Leader 提供，無需從 Notion 讀取）
+{arch_output}
+
+## Notion 頁面 URL
+{Notion 頁面 URL}
 
 ## 執行步驟
 1. 讀取設定檔（~/.claude-company/feature-workflow-config.md 或 ~/.claude/feature-workflow-config.md）
 2. 從設定檔的「專案對應」表取得當前專案的技術棧 ID
-3. 使用 notion-fetch 取得功能頁面完整內容（URL: {Notion 頁面 URL}），擷取：
-   - 「🗄️ 資料庫設計」（CREATE TABLE）
-   - 「🏗️ 架構設計」（類別清單、介面定義）
-   - 「📐 技術規格」（API 端點設計）
-4. 根據技術棧 ID 掃描專案中同類型的現有程式碼各一個作為風格範本：
+3. 根據技術棧 ID 掃描專案中同類型的現有程式碼各一個作為風格範本：
    - POJO/Entity、Mapper/Repository、Mapper XML（若適用）、Service、Controller
-5. 讀取每個範本的完整內容，學習 package、import 順序、註解風格、縮排
-6. 產生所有程式碼檔案，要求：
+4. 讀取每個範本的完整內容，學習 package、import 順序、註解風格、縮排
+5. 根據上方的架構設計（類別清單、介面定義）和 DB 設計（CREATE TABLE），產生所有程式碼檔案，要求：
    - package、import 順序、註解風格、縮排與範本完全一致
    - Getter/Setter 風格從範本學習（Lombok? 手動?）
    - Service 方法骨架含 TODO 註解標記待實作的業務邏輯
    - 註解和說明使用繁體中文
-7. 先展示檔案清單表格（#、檔案路徑、類型、說明）{dry_run_instruction}
-8. 使用 Write tool 依序建立檔案（先 Entity → Mapper → Service → Controller）
-9. 使用 notion-update-page 將檔案清單寫入「📁 程式碼清單」區塊
-10. 使用 notion-update-page 更新開發階段 = 「開發中」
+6. 先展示檔案清單表格（#、檔案路徑、類型、說明）{dry_run_instruction}
+7. 使用 Write tool 依序建立檔案（先 Entity → Mapper → Service → Controller）
+8. 使用 notion-update-page 將檔案清單寫入「📁 程式碼清單」區塊
+9. 使用 notion-update-page 更新開發階段 = 「開發中」
 
 完成後回報：建立了幾個檔案、檔案清單。
 ```
@@ -362,17 +432,38 @@ API 路徑、回傳格式、錯誤處理必須遵循專案既有慣例。
 
 ---
 
-### 5. 依序分派任務並監控
+### 5. 依序委派並傳遞上下文
 
-Leader 依序啟動每個 Teammate，等待完成後再啟動下一個：
+Leader 的核心職責是**收集完整產出並向下傳遞**。流程如下：
 
 ```
 1. Leader 執行 feature-start（直接執行）
-2. 啟動 spec-analyst → 等待完成 → 向使用者回報進度
-3. 啟動 db-designer → 等待完成 → 向使用者回報進度
-4. 啟動 arch-designer → 等待完成 → 向使用者回報進度
-5. 啟動 code-generator → 等待完成 → 向使用者回報進度
+   → 保存 Notion 頁面 URL
+
+2. 啟動 spec-analyst（注入：規格書內容）
+   → 等待完成
+   → 保存完整技術規格內容為 spec_output
+   → 向使用者回報進度
+
+3. 啟動 db-designer（注入：規格書 + spec_output）
+   → 等待完成
+   → 保存完整 DB 設計內容為 db_output
+   → 向使用者回報進度
+
+4. 啟動 arch-designer（注入：規格書 + spec_output + db_output）
+   → 等待完成
+   → 保存完整架構設計內容為 arch_output
+   → 向使用者回報進度
+
+5. 啟動 code-generator（注入：spec_output + db_output + arch_output）
+   → 等待完成
+   → 向使用者回報進度
 ```
+
+**關鍵原則**：
+- 每個 Teammate **不需要從 Notion 讀取上游產出**，Leader 已直接注入
+- 每個 Teammate **仍然寫入 Notion**（持久化，供人閱讀和後續 skill 使用）
+- Leader **保存完整產出**而非僅保存摘要，確保下游 Agent 拿到完整上下文
 
 每個階段完成後，Leader 向使用者顯示進度：
 
@@ -395,7 +486,7 @@ Leader 依序啟動每個 Teammate，等待完成後再啟動下一個：
 📝 功能名稱：訂閱推播統計報表
 🔀 Git branch：feature/subscription-push-statistics
 📊 Notion 頁面：https://notion.so/xxx
-🤖 Agent Team：Leader + 4 Teammates
+🤖 執行模式：Leader 委派（Leader + 4 Teammates）
 
 已完成階段：
   ✅ feature-start    — Notion 條目 + Git branch
@@ -423,10 +514,14 @@ Leader 依序啟動每個 Teammate，等待完成後再啟動下一個：
 ❌ [3/5] db-designer 失敗：Notion API 回應 429 (Rate Limit)
 
 選擇：
-1. 重試此階段（重新啟動 Teammate）
-2. 跳過此階段，繼續下一步
+1. 重試此階段（重新啟動 Teammate，注入相同上下文）
+2. 跳過此階段，繼續下一步（下游 Agent 的 prompt 中標記「DB 設計已跳過」）
 3. 終止流程（已完成的階段不受影響）
 ```
+
+**跳過階段時的上下文處理**：
+- 若跳過 db-designer，Leader 在 arch-designer 的 prompt 中標記「DB 設計已跳過，請根據技術規格自行推斷所需的資料結構」
+- `{db_output}` 設為空字串，不影響下游 prompt 結構
 
 ### Agent Teams 未啟用
 
@@ -442,13 +537,15 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 
 ### 中途終止後恢復
 
-若使用者中途終止或階段失敗後選擇終止，已完成的階段不受影響。使用者可手動執行剩餘的 skill 繼續：
+若使用者中途終止或階段失敗後選擇終止，已完成的階段不受影響（已寫入 Notion）。使用者可手動執行剩餘的 skill 繼續：
 
 ```
 已完成 start + spec，若要繼續：
-  /feature-db       ← 從 DB 設計繼續
+  /feature-db       ← 從 DB 設計繼續（會從 Notion 讀取 spec 產出）
   /feature-arch     ← 或跳過 DB，直接設計架構
 ```
+
+> 注意：手動執行個別 skill 時，仍會從 Notion 讀取上游產出（個別 skill 不使用 Leader 委派模式）。
 
 ---
 
@@ -461,3 +558,4 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 - **非 Git repo**：跳過 branch 建立，其餘流程正常執行
 - **使用者在確認時取消**：直接終止，不執行任何階段
 - **Agent Teams 未啟用**：顯示環境變數設定提示
+- **Teammate 回傳內容過大**：Leader 保存完整內容，但若累積上下文超過 context window 限制，對最早的階段產出進行摘要壓縮（優先壓縮規格書原文，因為 spec_output 已涵蓋其重點）
