@@ -67,66 +67,65 @@ claude plugin update feature-workflow@company-marketplace
 
 ### 快捷方式：一鍵自動化（/feature-auto）
 
-以 **Agent Team 協作模式**（Leader + 4 Teammates）自動執行完整流程。需先完成以下設定：
+以 **Agent Teams** 模式驅動 6 階段全流程自動化，支援 Teammate 並行開發、交叉審查、tmux Split Pane。
 
 **前置設定**：
 
-```bash
-# 1. 啟用 Agent Teams（加入 ~/.zshrc 永久生效）
-export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
-```
-
 ```json
-// 2. 啟用 Extended Thinking（~/.claude/settings.json）
+// ~/.claude/settings.json
 {
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "teammateMode": "tmux"  // 選用，啟用 Split Pane 視覺化
 }
 ```
 
-如果已有規格書檔案，可直接一行指令完成從建立到骨架的全流程：
+如果已有規格書檔案，可直接一行指令完成全流程：
 
 ```
 /feature-auto doc/訂閱推播統計.md
 ```
 
-執行後會展示計畫並等待確認：
+執行後 Leader 展示計畫（含 Token 成本預估）並等待確認：
 
 ```
 📄 規格書：doc/訂閱推播統計.md
 📝 功能名稱：訂閱推播統計報表
-📋 需求摘要：提供後台查詢訂閱推播的開封率與點擊率統計...
-🤖 執行模式：Agent Team（Leader + 4 Teammates）
 
 即將依序執行：
-  1. ✅ feature-start   — Leader 建立 Notion 條目 + Git branch
-  2. ✅ feature-spec    — spec-analyst 產出技術規格書
-  3. ✅ feature-db      — db-designer 設計資料庫
-  4. ✅ feature-arch    — arch-designer 設計架構
-  5. ✅ feature-scaffold — code-generator 產生程式碼骨架
+  Phase 1: ✅ feature-start      — Leader 建立 Notion + Git branch
+  Phase 2: ✅ spec-analyst        — 技術規格書（1 Teammate）
+  Phase 3: ✅ Design Team         — DB + 架構（2 Teammates 並行 + 交叉審查）
+  Phase 4: ✅ Code Gen Team       — 程式碼骨架（1~2 Teammates，spec 判斷後決定）
+  Phase 5: ✅ Code Review Team    — 品質審查（3 Teammates 並行 + 交叉分享）
+
+  預估 Teammate 總數：7~8 個
 
 確認執行？[Y/n]
 ```
 
-確認後 Agent Team 依序執行，每完成一個階段會顯示進度：
+確認後各 Team 依序執行，並行階段的 Teammates 同時工作：
 
 ```
-✅ [1/5] feature-start 完成 — Notion 頁面已建立
-✅ [2/5] spec-analyst 完成 — 3 個 API、5 項業務規則
-✅ [3/5] db-designer 完成 — 2 個表、4 個索引
-✅ [4/5] arch-designer 完成 — 8 個類別、策略模式
-✅ [5/5] code-generator 完成 — 8 個檔案已建立
+✅ [Phase 1] feature-start 完成 — Notion 頁面已建立
+✅ [Phase 2] spec-analyst 完成 — 3 個 API、前端：需要（JSP）、DB：需要
+✅ [Phase 3] Design Team 完成 — 2 個表 + 8 個類別（交叉審查通過）
+✅ [Phase 4] Code Gen Team 完成 — 6 個後端 + 3 個前端（API 契約一致）
+✅ [Phase 5] Code Review Team 完成 — 通過（1 個效能建議）
 
-🎉 功能建立完成！
-📊 Notion 頁面：https://notion.so/xxx
-🔀 Git branch：feature/subscription-push-statistics
+🎉 功能開發全流程完成！
 ```
 
 支援選項：
 
 ```bash
-/feature-auto doc/spec.md --stop-at spec    # 只到規格書階段
-/feature-auto doc/spec.md --skip db         # 跳過 DB 設計（功能不涉及資料庫）
-/feature-auto doc/spec.md --dry-run         # scaffold 僅預覽，不建立檔案
+/feature-auto doc/spec.md --stop-at design   # 只到設計階段
+/feature-auto doc/spec.md --skip db          # 跳過 DB 設計
+/feature-auto doc/spec.md --backend-only     # 強制只產後端程式碼
+/feature-auto doc/spec.md --no-review        # 跳過 Code Review
+/feature-auto doc/spec.md --dry-run          # Code 階段僅預覽
 ```
 
 #### 規格書範本
