@@ -81,7 +81,8 @@ claude plugin update feature-workflow@company-marketplace
 }
 ```
 
-> Split Pane 模式：預設 `teammateMode` 為 `"auto"`，在 tmux session 內會自動啟用 Split Pane。只需在 tmux 中啟動 Claude Code 即可。
+> **Split Pane**：預設 `teammateMode` 為 `"auto"`，在 tmux session 中自動啟用。只需 `tmux new-session -s feature` 後啟動 Claude Code 即可。
+> **settings.json 路徑**：取決於 `CLAUDE_CONFIG_DIR` 環境變數。未設定時預設 `~/.claude/settings.json`。
 
 如果已有規格書檔案，可直接一行指令完成全流程：
 
