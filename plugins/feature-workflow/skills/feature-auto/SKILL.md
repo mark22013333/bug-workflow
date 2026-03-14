@@ -168,44 +168,47 @@ Leader（delegate mode — 只協調不寫 code）
 
 ---
 
-## tmux 智慧判斷
+## 顯示模式（Split Pane vs In-Process）
 
-Leader 在 Phase 3（第一個並行階段）啟動前，執行以下檢查：
+Agent Teams 支援兩種顯示模式：
 
-### 檢查邏輯
+| 模式 | 說明 | 需求 |
+|------|------|------|
+| **in-process**（預設） | 所有 Teammate 在主終端內運行，用 Shift+Down 切換 | 任何終端 |
+| **split panes** | 每個 Teammate 有獨立窗格，可同時看到所有人的輸出 | tmux 或 iTerm2 |
 
-```bash
-# 1. tmux 是否可用
-which tmux >/dev/null 2>&1
+### `teammateMode` 設定
 
-# 2. 是否已在 tmux session 中
-echo $TMUX
+預設值為 `"auto"`：如果已在 tmux session 中就自動使用 Split Pane，否則用 in-process。
 
-# 3. settings.json 是否已設定 teammateMode
-cat ~/.claude/settings.json | grep teammateMode
-```
-
-### 決策矩陣
-
-| 條件 | 動作 |
-|------|------|
-| 已在 tmux + teammateMode=tmux | 直接使用 Split Pane，不需詢問 |
-| 已在 tmux + 未設定 teammateMode | 建議啟用：「偵測到 tmux 環境，是否啟用 Split Pane 讓每個 Teammate 有獨立視窗？[Y/n]」 |
-| 未在 tmux + tmux 已安裝 | 提示：「建議在 tmux 中執行以獲得 Split Pane 視覺化。要繼續不使用 tmux 嗎？[Y/n]」 |
-| tmux 未安裝 | 不提示，使用預設模式（Shift+上下切換 Teammate） |
-
-### 啟用 Split Pane
-
-若使用者同意啟用，Leader 檢查 `~/.claude/settings.json` 是否已有 `teammateMode`，若無則建議加入：
+若要覆蓋，在 settings.json 中設定 `teammateMode`：
 
 ```json
 {
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  },
   "teammateMode": "tmux"
 }
 ```
+
+也可以用 CLI flag 強制單次工作階段的模式：
+
+```bash
+claude --teammate-mode in-process
+```
+
+### Leader 的環境檢查
+
+Leader 在 Phase 3（第一個並行階段）啟動前，檢查目前環境：
+
+```bash
+# 是否已在 tmux session 中（auto 模式會自動判斷）
+echo $TMUX
+```
+
+| 條件 | 動作 |
+|------|------|
+| 已在 tmux session 中 | `auto` 模式自動使用 Split Pane，不需額外設定 |
+| 未在 tmux + tmux 已安裝 | 提示：「建議在 tmux session 中執行以獲得 Split Pane 視覺化（`tmux new-session -s feature`）。要繼續使用 in-process 模式嗎？[Y/n]」 |
+| tmux 未安裝 | 不提示，使用 in-process 模式（Shift+Down 切換 Teammate） |
 
 ---
 
