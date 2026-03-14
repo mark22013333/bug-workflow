@@ -119,84 +119,36 @@ description: Feature Workflow 首次設定引導。自動偵測 Notion 資料庫
 **情境 A：找到現有資料庫** → 驗證欄位，缺少的詢問是否新增。
 **情境 B：找不到** → 詢問使用者建立新的或指定現有（流程同 bug-setup 的 2-3）。
 
-### 4. 設定專案對應 + 技術棧
+### 4. 設定專案對應
 
-#### 4-1. 自動偵測環境資訊
+> **專案新增/偵測邏輯統一由 `/project-add` 處理**，避免重複維護 Git 偵測、技術棧偵測、Notion 建立等邏輯。
 
-取得 Git 遠端 URL 並解析為識別碼：
-
-```bash
-# Git remote URL（自動偵測）
-git remote get-url origin 2>/dev/null || echo ""
-
-# 分支名稱
-git branch --show-current 2>/dev/null || echo ""
-
-# 當前工作目錄（備用，非 Git repo 時使用）
-pwd
-```
-
-**Git Repo 識別碼解析規則**：
-1. 執行 `git remote get-url origin`
-2. 解析為 Git Repo 識別碼：
-   - host 含 `intumit`（公司 GitLab）→ `{group}/{repo}`（如 `FUB03P2402/PushAPIService`）
-   - 其他（GitHub 等）→ `{host}/{group}/{repo}`（如 `github.com/org/repo`）
-   - 自動去除 `.git` 後綴，支援 HTTPS / SSH 格式
-3. 在設定檔「專案對應」表中精確匹配「Git Repo」欄位
-4. 若不在 Git repo 或匹配失敗 → 進入互動式選擇
-
-#### 4-2. 技術棧自動偵測
-
-掃描專案路徑下的 `pom.xml` 或 `build.gradle`：
-- 含 `spring-webmvc` 且版本 < 5 + `tk.mybatis` → `spring-mvc-mybatis`
-- 含 `spring-boot-starter` + `mybatis-spring-boot` → `spring-boot-mybatis`
-- 含 `spring-boot-starter-data-jpa` → `spring-boot-jpa`
-- 含 `mybatis-plus-boot-starter` → `spring-boot-mybatis-plus`
-- 無法判斷 → 詢問使用者手動選擇或自訂
-
-#### 4-3. 匹配或建立專案條目
+#### 4-1. 匯入 bug-workflow 已有的專案對應
 
 **若已從 bug-workflow 匯入專案對應**：
 
-列出已匯入的專案，補充技術棧：
+直接將匯入的專案列複製到 feature-workflow 設定檔（技術棧欄位暫時留空）：
 ```
-已匯入的專案對應：
-
-1. 北市府-TPE01P2101 → TPE01P2101/LineBC
-   偵測到技術棧：spring-mvc-mybatis（pom.xml 含 spring-webmvc 4.x + mybatis + tk.mybatis）
-   確認使用此技術棧？[Y/n]
-
-2. FIA01P2403 WCS → FUB03P2402/WCS
-   偵測到技術棧：spring-boot-mybatis（pom.xml 含 spring-boot-starter + mybatis-spring-boot）
-   確認使用此技術棧？[Y/n]
+已從 bug-workflow 匯入 2 個專案對應（技術棧待補充）：
+  • 北市府-TPE01P2101 → TPE01P2101/LineBC [技術棧：待設定]
+  • FIA01P2403 WCS → FUB03P2402/WCS [技術棧：待設定]
 ```
 
-同時檢查這些專案在 Notion 中是否已有「技術棧」欄位值，若為空則寫入偵測結果。
+**若未匯入** → 專案對應表為空，將在步驟 4-2 引導新增。
 
-**若未匯入**：
+#### 4-2. 委託 `/project-add` 新增或補充當前專案
 
-搜尋專案資料庫中的所有專案，以 Git Repo 識別碼精確匹配：
-
-- **已匹配** → 確認專案資訊，補充技術棧和缺少的欄位
-- **未匹配** → 列出專案供選擇，或建立新專案
-
-**建立新專案條目**（使用 `notion-create-pages`）：
+設定檔產出後（步驟 6），自動詢問使用者：
 
 ```
-建立新專案，請填寫以下資訊：
-
-  專案名稱：（必填）
-  Git Repo：TPE01P2101/LineBC（已自動偵測，Enter 確認或修改）
-  技術棧：spring-mvc-mybatis（已自動偵測，Enter 確認或修改）
-  狀態：進行中（預設）
-
-以下欄位可現在填寫，或稍後在 Notion 頁面補充：
-  SIT 主機：（如 10.0.1.100，多台用換行分隔）
-  UAT 主機：（如 10.0.1.200）
-  正式環境主機：（如 AP1: 10.0.1.10, AP2: 10.0.1.11, WEB: 10.0.1.20）
-  部署方式：（如 WAR 部署到 Tomcat、Docker、K8s 等）
-  說明：（專案簡要描述）
+是否立即新增當前專案到設定檔？
+  → 將執行 /project-add 引導您完成專案偵測、技術棧設定與 Notion 同步。
+  [Y/n]
 ```
+
+- 若選擇 **是** → 執行 `/project-add` 流程（自動偵測 Git Repo、技術棧、搜尋/建立 Notion 專案、同步所有設定檔）
+- 若選擇 **否** → 跳過，使用者可稍後手動執行 `/project-add`
+- 若已從 bug-workflow 匯入且當前專案已在列表中 → `/project-add` 會偵測到已存在，進入「更新」模式補充技術棧
 
 ### 5. Agent 安裝（選用）
 
@@ -237,15 +189,14 @@ Feature Workflow 設定完成！
   ✅ 功能設計庫：xxxxxxxx-...
   ✅ 專案資料庫：f67699b6-...
 
-已設定的專案對應：
-  • 北市府-TPE01P2101 → TPE01P2101/LineBC [spring-mvc-mybatis]
-  • FIA01P2403 WCS → FUB03P2402/WCS [spring-boot-mybatis]
-
 Agent 安裝：已安裝 4 個 Agent 到 ~/.claude-company/agents/
 
 設定檔位置：~/.claude-company/feature-workflow-config.md
 
-現在可以使用：
+專案管理：
+  /project-add                  — 新增或更新專案（Git 偵測 + 技術棧 + Notion 同步）
+
+功能開發：
   /feature-start <功能簡述>     — 建立功能需求
   /feature-spec [補充需求]      — 產出技術規格書
   /feature-db [補充說明]        — 設計資料庫
@@ -263,10 +214,9 @@ Agent 安裝：已安裝 4 個 Agent 到 ~/.claude-company/agents/
 - **Notion MCP 未安裝**：提示使用者先安裝 Notion Plugin（`claude plugin install Notion`）
 - **Workspace 中有多個類似資料庫**：列出候選讓使用者選擇
 - **bug-workflow 設定檔部分資訊不全**：僅匯入有效的 ID，其餘進入完整偵測流程
-- **專案路徑下無 pom.xml/build.gradle**：技術棧無法自動偵測，詢問使用者手動選擇或輸入自訂 ID
-- **使用者想新增更多專案對應**：可重複執行 `/feature-setup`，選擇「更新專案對應」
+- **使用者想新增更多專案對應**：引導使用 `/project-add`（不需重複執行 `/feature-setup`）
 - **設定檔被意外刪除**：重新執行 `/feature-setup` 即可重建
 - **Agent 目標目錄已有同名檔案**：詢問是否覆蓋
 - **專案資料庫已有欄位但名稱不同**（如「Repo」vs「Git Repo」）：列出現有欄位讓使用者選擇對應
-- **不在 Git repo 中**：無法自動偵測識別碼，進入互動式選擇流程讓使用者手動指定專案
-- **Git remote 不存在**：Git Repo 欄位留空，使用者可稍後補填
+- **不在 Git repo 中**：`/project-add` 會處理此情境（互動式選擇或手動輸入）
+- **Git remote 不存在**：`/project-add` 會處理此情境（Git Repo 留空，稍後補填）
