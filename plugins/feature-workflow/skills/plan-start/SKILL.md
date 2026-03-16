@@ -43,7 +43,7 @@ Bug 類型還需檢查：
 
 ### 2. 偵測環境資訊（自動專案對應）
 
-與 `feature-start` 相同邏輯：
+自動偵測環境：
 
 ```bash
 git branch --show-current 2>/dev/null || echo ""
@@ -83,7 +83,7 @@ Git Repo 識別碼解析規則：
 
 #### Feature 類型
 
-使用 `notion-create-pages` 在「任務追蹤工具」建立，Properties 同 `feature-start`：
+使用 `notion-create-pages` 在「任務追蹤工具」建立，Properties：
 
 | 欄位 | 值 |
 |------|-----|
@@ -95,7 +95,7 @@ Git Repo 識別碼解析規則：
 | 開發階段 | `需求分析` |
 | 專案資料庫 | 關聯的專案頁面 URL |
 
-頁面 content 使用 feature-start 的標準 7 區塊模板。
+頁面 content 使用 `references/notion-page-template.md` 的標準 7 區塊模板。
 
 #### Bug 類型
 

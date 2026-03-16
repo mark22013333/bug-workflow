@@ -1,7 +1,7 @@
 # Feature Workflow 設定檔
 
-此檔案由 `/feature-setup` 自動產生，儲存於 `~/.claude-company/feature-workflow-config.md`。
-所有 Feature Skill 會讀取此檔案取得 Notion ID、專案對應與技術棧設定。
+此檔案由 `/plan-setup` 自動產生，儲存於 `~/.claude-company/feature-workflow-config.md`。
+所有 plan-* Skill 會讀取此檔案取得 Notion ID、專案對應與技術棧設定。
 
 ---
 
