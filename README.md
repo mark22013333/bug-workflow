@@ -21,6 +21,44 @@ claude plugin install feature-workflow
 
 ---
 
+## 完整工作流
+
+從安裝到日常使用的完整流程：
+
+```mermaid
+flowchart TD
+    subgraph Phase0["🔧 Phase 0：安裝（一次性）"]
+        direction TB
+        notion["claude plugin install Notion"]
+        crew["claude plugin marketplace add mark22013333/crew"]
+        setup_bug["/bug-setup<br/><i>偵測/建立 Notion 資料庫</i>"]
+        setup_plan["/plan-setup<br/><i>匯入共用 ID + Agent 安裝</i>"]
+        notion --> crew --> setup_bug --> setup_plan
+    end
+
+    subgraph Phase1["📂 Phase 1：進入專案（每個新專案一次）"]
+        direction TB
+        cd["cd ~/project"]
+        init["/init<br/><i>建立 CLAUDE.md</i>"]
+        projAdd["/project-add<br/><i>偵測架構 + Notion + DB MCP</i>"]
+        cd --> init --> projAdd
+    end
+
+    subgraph Phase2["🚀 Phase 2：日常使用"]
+        direction TB
+        bugFlow["/bug-start → /bug-update → /bug-close"]
+        planFlow["/plan-start → /plan → /plan-build<br/>→ /plan-verify → /plan-review → /plan-close"]
+    end
+
+    Phase0 --> Phase1 --> Phase2
+
+    style Phase0 fill:#e8f5e9,stroke:#4caf50
+    style Phase1 fill:#e3f2fd,stroke:#2196f3
+    style Phase2 fill:#fff3e0,stroke:#ff9800
+```
+
+---
+
 ## Plugin 一覽
 
 ### Bug Workflow
@@ -35,7 +73,7 @@ claude plugin install feature-workflow
 | `/bug-update reopen <Bug>` | 重新開啟已結案 Bug |
 | `/bug-close` | 結案 + 同步知識庫 |
 | `/bug-search <關鍵字>` | 搜尋過往 Bug 解法 |
-| `/project-add` | 新增專案到共用專案資料庫 |
+| `/project-add` | **偵測專案架構** + Notion 註冊 + DB MCP 安裝 |
 
 詳細說明見 [plugins/bug-workflow/README.md](plugins/bug-workflow/README.md)
 
@@ -78,6 +116,138 @@ flowchart TD
 | `/plan-status` | 列出所有活躍任務 | **0 次** |
 
 詳細說明見 [plugins/feature-workflow/README.md](plugins/feature-workflow/README.md)
+
+---
+
+## 專案註冊（/project-add）
+
+`/project-add` 是進入新專案的關鍵步驟，自動偵測專案架構並同步到 Notion。
+
+### 專案類型自動偵測
+
+```mermaid
+flowchart LR
+    scan["掃描專案結構"]
+    check{{"kernel/ 存在？<br/>Gradle 多模組？<br/>中介軟體設定？"}}
+    simple["🟢 簡單型<br/><i>單 WAR/JAR</i>"]
+    product["🟠 產品型<br/><i>多模組 + kernel</i>"]
+
+    scan --> check
+    check -- "否" --> simple
+    check -- "是" --> product
+
+    style simple fill:#e8f5e9,stroke:#4caf50
+    style product fill:#fff3e0,stroke:#ff9800
+```
+
+| 專案類型 | 判斷條件 | 範例 |
+|---------|---------|------|
+| **簡單型** | 單模組 Maven/Gradle、無外部資源目錄 | LineBC、PushAPIService |
+| **產品型** | 多模組 Gradle、`kernel/` 目錄、Solr/Hazelcast 等中介軟體 | SmartRobot、SmartCore |
+
+### 自動偵測項目
+
+| 偵測項目 | 來源 |
+|---------|------|
+| Git Repo 識別碼 | `git remote get-url origin` |
+| 建置工具 | `pom.xml` / `build.gradle` |
+| 技術棧 | Spring 版本 + ORM 框架 |
+| DB 類型 | JDBC URL / `-Dsql=` / driver 依賴 |
+| 專案類型 | 目錄結構 + 中介軟體偵測 |
+| 中介軟體（產品型） | Solr、Hazelcast 等設定檔 |
+
+### Notion 頁面模版
+
+`/project-add` 會根據專案類型套用對應的 Notion 頁面模版：
+
+**簡單型**：📋 概要 → 🏗️ 結構 → 🔧 建置 → 🗄️ DB → 🖥️ 主機 → 🚀 部署 → ⚠️ 注意 → 📚 參考
+
+**產品型**（額外包含）：
+- 📦 中介軟體區段（Solr、Hazelcast 等）
+- VM Options 範本（使用 `{PROJECT_ROOT}` 相對路徑）
+- H2 Quartz 排程 DB 資訊
+- `kernel/` 目錄結構說明
+
+---
+
+## DB MCP（DBHub）
+
+`/project-add` 偵測到 DB 類型後，可選安裝 [DBHub](https://github.com/bytebase/dbhub) 讓 Claude Code 直接查詢資料庫。
+
+### 支援的資料庫
+
+| DB | DSN 格式 |
+|----|---------|
+| **MSSQL** | `sqlserver://user:pwd@host:1433/database` |
+| **MySQL** | `mysql://user:pwd@host:3306/database` |
+| **PostgreSQL** | `postgresql://user:pwd@host:5432/database` |
+| **MariaDB** | `mysql://user:pwd@host:3306/database` |
+| **SQLite** | `sqlite:///path/to/database.db` |
+| **Oracle** | `oracle://user:pwd@host:1521/service` |
+
+### 安裝方式
+
+```bash
+# 專案級安裝（推薦，密碼不跨專案）
+claude mcp add dbhub --scope project -- \
+  npx @bytebase/dbhub --transport stdio \
+  --dsn "sqlserver://user:password@host:1433/database"
+```
+
+> ⚠️ 安裝後需**重啟 Claude Code**。密碼存放在 `.claude/settings.local.json`，確保已加入 `.gitignore`。
+
+### 進階設定：TOML 設定檔
+
+建立 `dbhub.toml` 精確控制讀寫權限：
+
+```toml
+[[sources]]
+id = "mydb"
+dsn = "sqlserver://${DB_USER}:${DB_PASSWORD}@host:1433/database"
+
+# 唯讀工具（日常查詢，推薦）
+[[tools]]
+name = "execute_sql"
+source = "mydb"
+readonly = true          # 只能 SELECT / SHOW / DESCRIBE / EXPLAIN
+max_rows = 1000
+
+# 讀寫工具（需要修改資料時用）
+[[tools]]
+name = "execute_sql_write"
+source = "mydb"
+readonly = false         # 允許 INSERT / UPDATE / DELETE
+```
+
+使用設定檔安裝：
+
+```bash
+claude mcp add dbhub --scope project -- \
+  npx @bytebase/dbhub --transport stdio --config ./dbhub.toml
+```
+
+> 💡 支援環境變數插值（`${DB_USER}`）和 Hot Reload（HTTP 模式下修改 TOML 立即生效）。
+
+### 管理指令
+
+```bash
+claude mcp list              # 查看已安裝的 MCP
+claude mcp remove dbhub      # 移除 DBHub
+```
+
+---
+
+## 前置檢查機制
+
+所有 CREW Skill（除 setup 本身外）執行前會自動檢查：
+
+| 檢查項目 | 未通過時 | 適用 Skill |
+|---------|---------|-----------|
+| **CLAUDE.md 存在？** | 提示執行 `/init` | bug-start/update/close、plan-start/build/verify/review/close |
+| **設定檔存在？** | 提示執行 `/bug-setup` 或 `/plan-setup` | 所有 Skill |
+| **專案已註冊？** | 提示執行 `/project-add` | bug-start/update/close、plan-start/close/sync |
+
+> 💡 `/init` 建立的 CLAUDE.md 建議 **commit + push**，讓團隊成員進入專案時不需重新執行。
 
 ---
 
@@ -135,6 +305,29 @@ claude plugin install feature-workflow
 > claude plugin enable bug-workflow && claude plugin enable feature-workflow
 > ```
 
+### Step 3：全域設定
+
+```bash
+/bug-setup        # 偵測/建立 Notion 資料庫、產出設定檔
+/plan-setup       # 自動匯入 bug-workflow 共用 ID + 設定技術棧
+```
+
+建議先執行 `/bug-setup`，`/plan-setup` 會自動匯入共用的 Notion ID 和專案路徑。
+
+> Setup 會自動偵測 Workspace 中的資料庫並列出候選讓你選擇，不需要手動輸入任何 ID。
+> 找不到資料庫時，Setup 會引導從零建立（含標準欄位 + Views + Relation）。
+
+### Step 4：進入專案
+
+```bash
+cd ~/IdeaProjects/YourProject   # 切換到專案目錄
+/init                           # 建立 CLAUDE.md（Claude Code 內建指令）
+/project-add                    # 偵測架構 → Notion 註冊 → 可選安裝 DB MCP
+```
+
+> ⚠️ `/init` 後建議 `git add CLAUDE.md && git commit && git push`，讓團隊共用。
+> `/project-add` 會在結束時自動提醒。
+
 ### 更新 Plugin
 
 ```bash
@@ -150,18 +343,48 @@ claude plugin update feature-workflow@company-marketplace
 > claude plugin install feature-workflow@company-marketplace
 > ```
 
-### Step 3：執行 Setup 引導
+---
 
-在專案目錄下執行：
+## Notion 資料庫架構
 
-```bash
-/bug-setup        # 偵測 Notion 資料庫、設定專案對應
-/plan-setup       # 自動匯入 bug-workflow 共用 ID + 設定技術棧
+`/bug-setup` 可從零建立所有資料庫（含 Views + Relation），解決首次使用者沒有資料庫的問題。
+
+```mermaid
+erDiagram
+    PROJECT["專案資料庫"] {
+        title Name
+        url GitRepo
+        select TechStack
+        status Status
+    }
+    TASK["任務追蹤工具"] {
+        title TaskName
+        status Status
+        multiselect TaskType
+        select Priority
+        select RootCause
+    }
+    BUG_KB["Bug 知識庫"] {
+        title Name
+        multiselect Tags
+        select Difficulty
+    }
+    FEATURE_KB["功能設計庫"] {
+        title Name
+        multiselect Tags
+        select DesignType
+    }
+
+    PROJECT ||--o{ TASK : "任務追蹤工具"
+    PROJECT ||--o{ BUG_KB : "bug處理方式"
+    PROJECT ||--o{ FEATURE_KB : "專案資料庫"
 ```
 
-建議先執行 `/bug-setup`，`/plan-setup` 會自動匯入共用的 Notion ID 和專案路徑。
+建立順序（解決 Relation 循環依賴）：
+1. **第一輪**：建立 4 個資料庫（不含 Relation）
+2. **第二輪**：補上跨庫 Relation（含雙向 DUAL）
 
-> Setup 會自動偵測 Workspace 中的資料庫並列出候選讓你選擇，不需要手動輸入任何 ID。
+詳細 Schema 見 [plugins/bug-workflow/references/db-templates.md](plugins/bug-workflow/references/db-templates.md)
 
 ---
 
@@ -177,6 +400,7 @@ Plugin 透過 `git remote get-url origin` 自動偵測 Git Repo 識別碼（如 
 |--------|------|------|
 | Bug Workflow | `~/.claude-company/bug-workflow-config.md` | Notion ID、專案對應、欄位對照 |
 | Feature Workflow | `~/.claude-company/feature-workflow-config.md` | 同上 + 技術棧定義 |
+| DB MCP | `.claude/settings.local.json`（專案級） | DBHub 連線資訊（含密碼，勿提交 Git） |
 
 設定檔儲存位置可在 setup 時選擇公司環境（`~/.claude-company/`）或個人環境（`~/.claude/`）。
 

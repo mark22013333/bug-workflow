@@ -12,7 +12,7 @@
 | `/bug-update reopen <Bug>` | 重新開啟已結案的 Bug（復發處理） |
 | `/bug-close` | 從 Git diff 自動擷取修復細節，結案並同步知識庫 |
 | `/bug-search <關鍵字>` | 搜尋過往 Bug 解法與經驗 |
-| `/project-add` | 新增專案到 Notion 專案資料庫，同步更新所有 Workflow 設定檔 |
+| `/project-add` | **偵測專案架構**（簡單型/產品型）→ Notion 註冊 → 可選安裝 DB MCP |
 
 ## 前置條件
 
@@ -92,17 +92,24 @@ Plugin 透過 `git remote get-url origin` 自動偵測 Git Repo，比對 Notion 
 
 ### 新增專案（/project-add）
 
-在新專案目錄下執行：
+在新專案目錄下執行 `/project-add`，自動完成：
 
-```bash
-/project-add
-```
-
-自動完成：
-1. 偵測 Git Repo 識別碼（支援公司 GitLab 與 GitHub）
-2. 偵測技術棧（掃描 pom.xml / build.gradle）
-3. 搜尋 Notion 專案資料庫，比對或建立專案條目
-4. 同步更新所有 Workflow 設定檔（bug-workflow + feature-workflow）
+1. **偵測 Git Repo** 識別碼（支援公司 GitLab 與 GitHub）
+2. **偵測技術棧**（掃描 pom.xml / build.gradle）
+3. **判斷專案類型**：
+   - **簡單型** — 單 WAR/JAR、Maven 單模組
+   - **產品型** — Gradle 多模組、`kernel/` 外部資源、Solr/Hazelcast 中介軟體
+4. **偵測 DB 類型**（MSSQL / MySQL / PostgreSQL / H2）
+5. **同步 Notion** — 建立或更新專案條目，套用對應頁面模版
+6. **可選安裝 DB MCP**（[DBHub](https://github.com/bytebase/dbhub)）：
+   ```bash
+   # 專案級安裝（推薦）
+   claude mcp add dbhub --scope project -- \
+     npx @bytebase/dbhub --transport stdio \
+     --dsn "sqlserver://user:pwd@host:1433/database"
+   ```
+7. **檢查 CLAUDE.md** — 提醒 commit + push 讓團隊共用
+8. **同步更新**所有 Workflow 設定檔（bug-workflow + feature-workflow）
 
 已存在的專案也可用 `/project-add` 更新資訊（主機、部署方式等）。
 
