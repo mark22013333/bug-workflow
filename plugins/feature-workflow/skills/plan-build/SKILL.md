@@ -1,6 +1,6 @@
 ---
 name: plan-build
-description: 從 .spec/ 讀取設計文件，以 Agent Teams leader-delegate 模式（4 人團隊）產生程式碼。Leader 只協調不寫 code。當使用者提到「plan-build」、「build」、「產生程式碼」時觸發此 Skill。
+description: 從 .spec/ 讀取設計文件，以 Agent Teams leader-delegate 模式（最多 5 人團隊）產生程式碼。Leader 只協調不寫 code。當使用者提到「plan-build」、「build」、「產生程式碼」時觸發此 Skill。
 ---
 
 # plan-build — Agent Teams 程式碼產生
@@ -74,12 +74,17 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 - `FRONTEND_REQUIRED`: true/false
 - `FRONTEND_TECH`: JSP/Vue/React/無
 
+另外檢查 DB MCP 可用性：
+- `DB_MCP_AVAILABLE`: 執行 `claude mcp list` 檢查是否有 `dbhub`
+
 根據判斷結果決定團隊規模：
 
 | 情境 | 團隊組成 |
 |------|---------|
 | `--backend-only` 或無前端 | 後端工程師（Subagent 模式） |
-| 有前端需求 | 4 人 Agent Teams（後端 + 前端 + API + 測試） |
+| 有前端需求，無 DB MCP | 4 人 Agent Teams（後端 + API + 前端 + 測試） |
+| 有前端需求，有 DB MCP | 5 人 Agent Teams（DB + 後端 + API + 前端 + 測試） |
+| 無前端需求，有 DB MCP | 4 人 Agent Teams（DB + 後端 + API + 測試） |
 
 ### 4. 確認執行計畫
 
@@ -88,9 +93,10 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 
 📄 設計來源：.spec/{slug}/
 📊 Teammate 配置：
+  {• db-engineer       — DB 遷移/索引/效能優化（需 DB MCP）}
   • backend-engineer  — 後端核心（POJO/Mapper/Service）
   • api-engineer      — API 層（Controller/DTO/驗證）
-  • frontend-engineer — 前端頁面（{FRONTEND_TECH}）
+  {• frontend-engineer — 前端頁面（{FRONTEND_TECH}）}
   • test-engineer     — 測試程式碼（單元測試/整合測試）
 
 {--dry-run: 預覽模式，不建立檔案}
@@ -150,12 +156,34 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 使用繁體中文撰寫註解。
 ```
 
-#### 完整 4 人團隊（Agent Teams）
+#### 完整團隊（Agent Teams）
 
-使用自然語言要求 Claude 建立 Agent Team：
+使用自然語言要求 Claude 建立 Agent Team（根據步驟 3 判斷結果決定成員數）：
 
 ```
-建立一個 Agent Team 來開發 {功能名稱} 功能，生成 4 個 Teammate：
+建立一個 Agent Team 來開發 {功能名稱} 功能，生成 {N} 個 Teammate：
+
+{若 DB_MCP_AVAILABLE = true，包含以下成員：}
+【成員 0：DB 工程師】DB Engineer
+- 📊 專職資料庫工程師，透過 DB MCP（DBHub）直接操作資料庫
+- 讀取設計文件：
+  * .spec/{slug}/db.md（DB 設計 — 新增/修改的表結構）
+  * .spec/{slug}/db.sql（SQL 檔案，若存在）
+- 使用 execute_sql 和 search_objects 工具查詢真實資料庫
+- 任務：
+  * 查詢現有表結構，確認 db.md 設計與 DB 現狀的差異
+  * 產生 Migration SQL（CREATE TABLE / ALTER TABLE），放入 db.sql 或專案指定的 migration 目錄
+  * 檢查既有索引，為新查詢場景建議索引（WHERE / JOIN / ORDER BY 欄位）
+  * 查詢 sys.dm_exec_query_stats（MSSQL）或 pg_stat_statements（PostgreSQL），找出與本功能相關的慢查詢
+  * 若發現效能風險，產出索引建議或查詢改寫方案，寫入 .spec/{slug}/db-optimization.md
+  * 確認欄位命名慣例（大小寫、前綴、型別）與既有表一致
+  * 檢查 FK / UNIQUE / NOT NULL 約束是否合理
+- **最先開始**，完成後通知 Lead 並向後端工程師分享：
+  * 確認後的表結構（欄位名、型別、約束）
+  * 索引建議清單
+  * 效能風險提醒（若有）
+- 使用 Opus 模型
+- 使用繁體中文
 
 【成員 1：後端工程師】Backend Engineer
 - 讀取專案 CLAUDE.md 了解架構慣例
@@ -163,7 +191,7 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
   * .spec/{slug}/arch.md（架構設計 — 類別清單、介面定義）
   * .spec/{slug}/db.md（DB 設計 — 表結構）
 - 掃描專案現有程式碼學習風格（POJO、Mapper、Service 各一個範本）
-{db_mcp_teammate_instruction}
+{若有 DB 工程師：等待 DB 工程師完成，取得確認後的表結構和索引建議}
 - 任務：
   * 產生 POJO/Entity（含 Lombok、表註解）
   * 產生 Mapper/DAO（tk.mybatis 或 JPA Repository）
@@ -207,7 +235,7 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 【成員 4：測試工程師】Test Engineer
 - 讀取專案的測試慣例（掃描 src/test/ 下現有測試檔案）
 - 等待後端工程師完成後開始
-{db_mcp_test_instruction}
+{若有 DB 工程師：參考 DB 工程師提供的約束條件和索引資訊，設計更完整的測試案例}
 - 任務：
   * 為 Service 層產生單元測試（JUnit + Mockito）
   * 為 Controller 層產生整合測試（MockMvc / SpringBootTest）
@@ -217,12 +245,17 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 - 使用繁體中文
 
 【任務依賴關係】
+{若有 DB 工程師：}
+- 成員 0（DB 工程師）最先開始，驗證表結構和索引
+- 成員 1（後端工程師）等成員 0 完成後開始，依據確認後的表結構產生程式碼
+{若無 DB 工程師：}
 - 成員 1（後端工程師）最先開始，是核心
-- 成員 2（API 工程師）和 4（測試工程師）等成員 1 完成後再開始
+{共同：}
+- 成員 2（API 工程師）和測試工程師等成員 1 完成後再開始
 - 成員 3（前端工程師）可以跟成員 1 同時開始（前端不依賴後端實作）
-- 成員 2、3、4 之間可並行
+- API、前端、測試之間可並行
 
-重要：四位 Teammate 負責不同目錄，不會衝突。
+重要：各 Teammate 負責不同目錄，不會衝突。
 完成後：互相確認 API 契約是否一致（端點 URL、參數、回應格式），
 不一致的地方由 API 工程師為準，其他成員調整。
 {dry_run_instruction}
@@ -267,6 +300,7 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 📊 統計：N 個後端 + M 個前端 + K 個測試
 
 已完成：
+  {✅ db-engineer       — Migration SQL + 索引建議 + 效能報告}
   ✅ backend-engineer  — N 個檔案（POJO/Mapper/Service）
   ✅ api-engineer      — N 個檔案（Controller/DTO）
   {✅ frontend-engineer — M 個檔案（JSP/JS/CSS）}
@@ -283,39 +317,26 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 
 ## DB MCP 提示詞模版
 
-步驟 5 檢查 DB MCP 可用性後，根據結果填充以下佔位符：
+步驟 5 檢查 DB MCP 可用性後，根據結果決定是否加入 DB 工程師：
 
 ### 若 DBHub 已安裝
 
-`{db_mcp_instruction}`（Subagent 模式用）：
+- Agent Teams 模式：加入「成員 0：DB 工程師」，成為最先開始的成員
+- Subagent 模式：在後端工程師提示詞中嵌入 `{db_mcp_instruction}`：
 ```
 專案已安裝 DB MCP（DBHub），你可以直接查詢資料庫：
 - 使用 execute_sql 查詢現有表結構，確認 db.md 設計與實際 DB 是否一致
 - 使用 search_objects 搜尋相關的表、欄位、索引、預存程序
 - 查詢既有資料表的欄位命名慣例（大小寫、前綴、型別偏好），確保新表設計風格一致
 - 檢查是否有可複用的既有表或欄位，避免重複建立
-```
-
-`{db_mcp_teammate_instruction}`（後端工程師用）：
-```
-- 📊 DB MCP 已安裝 — 可使用 execute_sql 和 search_objects 工具查詢真實資料庫：
-  * 開始前先查詢既有表結構，確認 db.md 設計與 DB 現狀一致
-  * 查詢欄位命名慣例，確保 POJO 欄位映射正確
-  * 若 db.md 提到既有表的關聯，直接查詢確認 FK/索引
-  * 查詢慢查詢統計（sys.dm_exec_query_stats），為新 SQL 設計提供效能參考
-```
-
-`{db_mcp_test_instruction}`（測試工程師用）：
-```
-- 📊 DB MCP 已安裝 — 可使用 execute_sql 查詢真實資料庫：
-  * 查詢測試相關的表結構，確保測試資料建立正確
-  * 查詢既有資料的範圍和分佈，設計更貼近真實的測試案例
-  * 檢查 NOT NULL / UNIQUE / FK 約束，確保測試涵蓋約束違反的邊界條件
+- 查詢慢查詢統計，為新 SQL 設計提供效能參考
+- 產出索引建議或查詢改寫方案
 ```
 
 ### 若 DBHub 未安裝
 
-所有 DB MCP 佔位符替換為空字串（不顯示）。
+- Agent Teams 模式：不加入 DB 工程師，維持原有成員配置
+- Subagent 模式：`{db_mcp_instruction}` 替換為空字串
 
 ---
 

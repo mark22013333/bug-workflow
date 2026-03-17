@@ -117,19 +117,25 @@ flowchart TD
 
 ## Agent Teams 組成
 
-### plan-build（4 人開發團隊）
+### plan-build（最多 5 人開發團隊）
 
 ```mermaid
 flowchart LR
+    DB["🗄️ DB Engineer<br/>Migration / 索引 / 效能<br/><i>需 DB MCP</i>"]
     BE["🔧 Backend Engineer<br/>POJO / Mapper / Service"]
     API["🌐 API Engineer<br/>Controller / DTO / 驗證"]
     FE["🎨 Frontend Engineer<br/>前端頁面"]
     TE["🧪 Test Engineer<br/>單元測試 / 整合測試"]
 
+    DB --> BE
     BE --> API
     BE --> TE
     BE -.->|同時開始| FE
+
+    style DB fill:#fff3e0,stroke:#ff9800
 ```
+
+> DB Engineer 僅在專案安裝了 DB MCP（DBHub）時加入，透過 `execute_sql` 和 `search_objects` 直接查詢真實資料庫。
 
 ### plan-review（3 人審查團隊）
 
