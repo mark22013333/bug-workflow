@@ -71,6 +71,16 @@ flowchart TD
 
 ## 前置設定
 
+### plan-build 使用方式
+
+```bash
+/plan-build                # 完整產生（後端 + 前端 + API + 測試）
+/plan-build --dry-run      # 預覽不建立檔案
+/plan-build --backend-only # 只產後端
+```
+
+> 若專案已安裝 DB MCP（DBHub），Teammate 會自動查詢真實資料表結構來產生更準確的程式碼。
+
 ### Agent Teams（plan-build / plan-review）
 
 ```json

@@ -105,6 +105,7 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 - 專案 CLAUDE.md 內容
 - 技術棧 ID 和定義（從設定檔）
 - 1-2 個現有程式碼範本（POJO、Mapper、Service、Controller 各一個）的檔案路徑
+- **DB MCP 可用性**：檢查 `claude mcp list` 是否有 `dbhub`，若有則在後端工程師和測試工程師的提示詞中啟用 DB 查詢能力
 
 ### 6. 啟動 Agent Teams
 
@@ -130,6 +131,9 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 ## 現有程式碼範本
 請讀取以下檔案作為風格參考：
 {範本檔案路徑清單}
+
+## DB MCP（若可用）
+{db_mcp_instruction}
 
 ## 任務
 按架構設計的類別清單，依序產生所有後端程式碼骨架：
@@ -159,6 +163,7 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
   * .spec/{slug}/arch.md（架構設計 — 類別清單、介面定義）
   * .spec/{slug}/db.md（DB 設計 — 表結構）
 - 掃描專案現有程式碼學習風格（POJO、Mapper、Service 各一個範本）
+{db_mcp_teammate_instruction}
 - 任務：
   * 產生 POJO/Entity（含 Lombok、表註解）
   * 產生 Mapper/DAO（tk.mybatis 或 JPA Repository）
@@ -202,6 +207,7 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 【成員 4：測試工程師】Test Engineer
 - 讀取專案的測試慣例（掃描 src/test/ 下現有測試檔案）
 - 等待後端工程師完成後開始
+{db_mcp_test_instruction}
 - 任務：
   * 為 Service 層產生單元測試（JUnit + Mockito）
   * 為 Controller 層產生整合測試（MockMvc / SpringBootTest）
@@ -272,6 +278,44 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
   • /plan-review  — Agent Teams 3 人審查
   • /plan-close   — 結案並同步 Notion
 ```
+
+---
+
+## DB MCP 提示詞模版
+
+步驟 5 檢查 DB MCP 可用性後，根據結果填充以下佔位符：
+
+### 若 DBHub 已安裝
+
+`{db_mcp_instruction}`（Subagent 模式用）：
+```
+專案已安裝 DB MCP（DBHub），你可以直接查詢資料庫：
+- 使用 execute_sql 查詢現有表結構，確認 db.md 設計與實際 DB 是否一致
+- 使用 search_objects 搜尋相關的表、欄位、索引、預存程序
+- 查詢既有資料表的欄位命名慣例（大小寫、前綴、型別偏好），確保新表設計風格一致
+- 檢查是否有可複用的既有表或欄位，避免重複建立
+```
+
+`{db_mcp_teammate_instruction}`（後端工程師用）：
+```
+- 📊 DB MCP 已安裝 — 可使用 execute_sql 和 search_objects 工具查詢真實資料庫：
+  * 開始前先查詢既有表結構，確認 db.md 設計與 DB 現狀一致
+  * 查詢欄位命名慣例，確保 POJO 欄位映射正確
+  * 若 db.md 提到既有表的關聯，直接查詢確認 FK/索引
+  * 查詢慢查詢統計（sys.dm_exec_query_stats），為新 SQL 設計提供效能參考
+```
+
+`{db_mcp_test_instruction}`（測試工程師用）：
+```
+- 📊 DB MCP 已安裝 — 可使用 execute_sql 查詢真實資料庫：
+  * 查詢測試相關的表結構，確保測試資料建立正確
+  * 查詢既有資料的範圍和分佈，設計更貼近真實的測試案例
+  * 檢查 NOT NULL / UNIQUE / FK 約束，確保測試涵蓋約束違反的邊界條件
+```
+
+### 若 DBHub 未安裝
+
+所有 DB MCP 佔位符替換為空字串（不顯示）。
 
 ---
 
