@@ -8,9 +8,10 @@
 
 ```bash
 claude plugin marketplace add mark22013333/crew && \
-claude plugin install feature-workflow && \
-claude plugin enable feature-workflow
+claude plugin install feature-workflow
 ```
+
+安裝後 Plugin 會自動啟用。若未自動啟用，手動執行：`claude plugin enable feature-workflow`
 
 首次使用前執行 `/plan-setup` 完成設定引導。
 

@@ -36,9 +36,10 @@
 
 ```bash
 claude plugin marketplace add mark22013333/crew && \
-claude plugin install bug-workflow && \
-claude plugin enable bug-workflow
+claude plugin install bug-workflow
 ```
+
+安裝後 Plugin 會自動啟用。若未自動啟用，手動執行：`claude plugin enable bug-workflow`
 
 ### 更新
 
