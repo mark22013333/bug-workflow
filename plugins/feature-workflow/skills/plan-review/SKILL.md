@@ -1,6 +1,6 @@
 ---
 name: plan-review
-description: 以 Agent Teams 3 人並行審查程式碼（邏輯/品質/安全），完成後互相分享發現並交叉審查，產出審查報告寫入 .spec/ 目錄。當使用者提到「plan-review」、「審查」、「review」時觸發此 Skill。
+description: 以 Agent Teams 3 人並行審查程式碼（邏輯/品質/安全），完成後互相分享發現並交叉審查，產出審查報告寫入 .spec/ 目錄。當使用者提到「plan-review」、「程式碼審查」、「code review」、「Agent Teams 審查」時觸發此 Skill。
 ---
 
 # plan-review — Agent Teams 程式碼審查
@@ -239,6 +239,14 @@ Leader 收集所有 Reviewer 的發現（含交叉分享結果），彙整寫入
   • 修正問題後再次 /plan-review
   • /plan-close   — 結案並同步 Notion
 ```
+
+---
+
+## Gotchas
+
+- **3 人並行的 token 消耗約為單次的 5-6 倍**：3 位 Reviewer 各自讀取完整程式碼 + 設計文件，再加上交叉審查。小變更（< 5 個檔案）建議用 `--quick` 模式（單一 Subagent），節省 80% token。
+- **交叉審查傾向「無中生有」**：三位 Reviewer 獨立審查都沒嚴重問題時，交叉審查階段不太可能突然冒出真正嚴重的問題。Leader 彙整時應對交叉審查新增的「嚴重」問題持保留態度，優先信任獨立審查的結果。
+- **merge-base 的主分支名稱**：`git merge-base HEAD production` 中的 `production` 並非所有專案都適用。應從專案 CLAUDE.md 的 Git Flow 描述取得主分支名稱（可能是 `production`、`master`、`main`），或從設定檔讀取。
 
 ---
 

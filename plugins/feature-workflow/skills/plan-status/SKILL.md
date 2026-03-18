@@ -1,6 +1,6 @@
 ---
 name: plan-status
-description: 列出 .spec/ 目錄中所有活躍和已完成的任務，純本地操作不呼叫 Notion。當使用者提到「plan-status」、「狀態」、「任務列表」時觸發此 Skill。
+description: 列出 .spec/ 目錄中所有活躍和已完成的任務，純本地操作不呼叫 Notion。當使用者提到「plan-status」、「任務狀態」、「目前有哪些任務」、「任務列表」時觸發此 Skill。
 ---
 
 # plan-status — 查看任務狀態
@@ -115,6 +115,13 @@ ls -d .spec/*/
   + 新增 push-tag-query 到索引（目錄存在但索引缺少）
   - 移除 old-feature 從索引（索引有但目錄不存在）
 ```
+
+---
+
+## Gotchas
+
+- **_index.md 與實際目錄常不同步**：`_index.md` 是快取性質，手動刪除目錄或中斷操作都可能造成不一致。掃描時應以「目錄存在 + README.md 可解析」為準，`_index.md` 僅作為輔助，發現不一致時自動修復（步驟 5）。
+- **--cleanup 的天數計算基準**：應從移入「已完成」的日期算起，不是 `README.md` 中的 `created` 日期。完成日期從 `_index.md` 的「已完成」表的「完成日期」欄位讀取；若該欄位不存在，fallback 到 `log.md` 最後一筆紀錄的日期。
 
 ---
 

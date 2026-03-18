@@ -1,15 +1,15 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "feature-workflow",
-  "description": "功能開發工作流 — 整合 Notion 與 Claude Code，以 .spec/ 本地規劃 + Agent Teams 產生程式碼與審查 + chrome-cdp 驗收驗證",
+  "description": "功能開發工作流 — 整合 Notion 與 Claude Code，以 .spec/ 本地規劃 + Agent Teams 產生程式碼與審查 + Chrome DevTools 驗收驗證",
   "owner": {
     "name": "Cheng"
   },
   "plugins": [
     {
       "name": "feature-workflow",
-      "description": "功能開發工作流 — 本地規劃、Agent Teams 開發與審查、chrome-cdp 驗證、Notion 結案同步",
-      "version": "4.0.0",
+      "description": "功能開發工作流 — 本地規劃、Agent Teams 開發與審查、Chrome DevTools 驗證、Notion 結案同步",
+      "version": "4.4.0",
       "author": {
         "name": "Cheng"
       },

@@ -360,6 +360,14 @@ CLAUDE.md：{✅ 已推送 / ⚠️ 建議推送}
 
 ---
 
+## Gotchas
+
+- **設定檔同步必須更新「所有存在的」**：bug-workflow + feature-workflow 最多 4 個設定檔（公司/個人 × 兩個 workflow），遺漏任一個會導致另一個 workflow 找不到專案對應。步驟 7 的四條路徑每個存在的都要更新。
+- **intumit 判斷是硬編碼規則**：Git host 含 `intumit`（公司 GitLab）→ 只取 `{group}/{repo}`。未來若遷移到其他 GitLab 實例，需修改步驟 1 的解析邏輯。
+- **Relation 值是頁面 URL 不是名稱**：`notion-create-pages` 的 Relation 欄位需要填入「被關聯頁面的 URL」（如 `https://www.notion.so/xxx`），不是填專案名稱字串。填錯格式會靜默成功但 Relation 為空。
+
+---
+
 ## 邊界情況
 
 - **設定檔不存在**：提示使用者先執行 `/bug-setup` 或 `/plan-setup`

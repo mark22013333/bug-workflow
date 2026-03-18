@@ -229,6 +229,14 @@ Reopen 模式需要定位「測試中」或「已完成」的 Bug。
 
 ---
 
+## Gotchas
+
+- **update_content 語意是覆蓋不是附加**：`notion-update-page` 的 `update_content` 對同一區塊寫入時會覆蓋該區塊內容。多次寫同一區塊時，必須先 `notion-fetch` 取得現有內容，串接新內容後再寫回，否則會覆蓋之前的調查紀錄。
+- **Reopen 勾選取消格式**：checkbox 是 Notion 的 `to_do` block，用 `update_content` 改 `checked` 狀態即可；用 `replace_content` 會意外刪除使用者手動新增的內容。
+- **時間戳用本地時間**：`[HH:mm]` 標記要用 24 小時制本地時區。Claude 預設 UTC，需用 `date` 指令取本地時間（如 `date +%H:%M`）再填入。
+
+---
+
 ## 邊界情況
 
 - **設定檔不存在**：提示使用者先執行 `/bug-setup` 完成初始設定
