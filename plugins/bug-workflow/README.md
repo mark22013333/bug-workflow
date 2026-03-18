@@ -84,6 +84,46 @@ flowchart TD
     style done fill:#efe,stroke:#6c6
 ```
 
+## 使用範例
+
+### 建立 Bug
+
+```bash
+/bug-start 推播排程發送失敗，部分使用者未收到訊息
+```
+
+### 更新調查資訊
+
+```bash
+/bug-update 關鍵 log：NullPointerException at PushService.java:235
+/bug-update 初步判斷：推播排程在取得 access token 時發生空指標，可能是 token 過期未更新
+/bug-update log /opt/tomcat/logs/catalina.out    # 從檔案擷取 ERROR
+```
+
+### 結案
+
+```bash
+/bug-close    # 從 Git diff 自動擷取修復細節，更新 Notion 並同步知識庫
+```
+
+### 重新開啟已結案 Bug
+
+```bash
+/bug-update reopen                                   # 顯示該專案近期已結案 Bug 清單，互動式選擇
+/bug-update reopen SSO登入找不到使用者                  # 用關鍵字搜尋已結案 Bug
+/bug-update reopen https://www.notion.so/abe41af9...  # 直接貼 Notion 頁面連結
+```
+
+> 不帶參數時會列出該專案近期已結案的 Bug，可輸入編號、關鍵字、或 Notion 連結來選擇。
+
+### 搜尋過往 Bug
+
+```bash
+/bug-search 推播 token 過期    # 搜尋知識庫中的相關 Bug 解法
+```
+
+---
+
 ## 跨專案支援
 
 Plugin 透過 `git remote get-url origin` 自動偵測 Git Repo，比對 Notion 專案資料庫中的「Git Repo」欄位，自動關聯到正確的專案。
