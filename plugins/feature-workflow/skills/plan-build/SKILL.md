@@ -31,7 +31,7 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 
 ### 設計文件
 
-建議至少完成 `/plan arch`（arch.md 存在），否則提示先執行 `/plan`。
+**必須**至少完成 `/plan arch`（arch.md 存在）。若 arch.md 不存在，**禁止繼續**，直接告知使用者先執行 `/plan arch` 產生架構設計。
 
 > **前置檢查**：參照 bug-workflow plugin 的 `references/prerequisites.md` 檢查 CLAUDE.md 是否存在。
 
@@ -64,9 +64,9 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 | `spec.md` | 技術規格（API 設計、業務邏輯） | 建議 |
 | `db.md` | DB 設計（表結構） | 建議 |
 | `db.sql` | SQL 檔案 | 選讀 |
-| `arch.md` | 架構設計（類別清單、介面定義） | **強烈建議** |
+| `arch.md` | 架構設計（類別清單、介面定義） | **必要** |
 
-若 arch.md 不存在，警告使用者並詢問是否繼續。
+若 arch.md 不存在，**停止流程**，告知使用者必須先執行 `/plan arch` 產生架構設計後再回來執行 `/plan-build`。不提供跳過選項。
 
 ### 3. 判斷團隊組成
 
@@ -355,7 +355,7 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 
 ## 邊界情況
 
-- **arch.md 不存在**：警告並詢問，允許從 spec.md 或 README.md 直接產生
+- **arch.md 不存在**：**hard block** — 停止流程，要求使用者先執行 `/plan arch`
 - **Agent Teams 未啟用**：顯示設定指引
 - **--dry-run 模式**：不建立任何檔案，只展示清單和關鍵片段
 - **Teammate 失敗**：提供選項：重試 / 跳過 / 終止
