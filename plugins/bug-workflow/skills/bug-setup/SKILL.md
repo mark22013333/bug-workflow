@@ -337,7 +337,7 @@ Bug Workflow 設定完成！
 
 ## 邊界情況
 
-- **Notion MCP 未安裝**：提示使用者先安裝 Notion Plugin（`claude plugin install Notion`）
+- **Notion MCP 未安裝**：提示使用者先安裝 Notion Plugin（`claude plugin install notion`）
 - **Workspace 中有多個類似資料庫**：列出候選讓使用者選擇
 - **使用者想新增更多專案對應**：可重複執行 `/bug-setup`，選擇「更新專案對應」
 - **設定檔被意外刪除**：重新執行 `/bug-setup` 即可重建

@@ -6,7 +6,7 @@
 
 ```bash
 # 安裝 Notion MCP Server（提供 Notion 讀寫能力）
-claude plugin install Notion
+claude plugin install notion
 
 # 加入 Marketplace → 安裝（安裝後自動啟用）
 claude plugin marketplace add mark22013333/crew && \
@@ -29,7 +29,7 @@ claude plugin install feature-workflow
 flowchart TD
     subgraph Phase0["🔧 Phase 0：安裝（一次性）"]
         direction TB
-        notion["claude plugin install Notion"]
+        notion["claude plugin install notion"]
         crew["claude plugin marketplace add mark22013333/crew"]
         setup_bug["/bug-setup<br/><i>偵測/建立 Notion 資料庫</i>"]
         setup_plan["/plan-setup<br/><i>匯入共用 ID + Agent 安裝</i>"]
@@ -291,7 +291,7 @@ Google 官方維護，29 種工具。安裝後重啟 Claude Code。
 ### Step 1：安裝 Notion MCP Server
 
 ```bash
-claude plugin install Notion
+claude plugin install notion
 ```
 
 安裝後**重啟 Claude Code**，首次使用 Notion 工具時會自動開啟瀏覽器進行 OAuth 授權：

@@ -17,7 +17,7 @@
 
 1. **Notion Plugin** — 需先安裝 Notion MCP Server
    ```bash
-   claude plugin install Notion
+   claude plugin install notion
    ```
 
 2. **Notion Workspace** — 需有以下資料庫（或由 `/bug-setup` 引導建立）：
