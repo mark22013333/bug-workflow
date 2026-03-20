@@ -169,15 +169,15 @@
 建立工作區頁面時使用以下 Notion-flavored Markdown 作為 content：
 
 ```markdown
-<database data-source-url="collection://{任務DS_ID}" inline="true" icon="✅">任務追蹤工具</database>
+<database data-source-url="collection://{任務DS_ID}" inline="false" icon="✅">任務追蹤工具</database>
 
 {若有功能設計庫}
-<database data-source-url="collection://{功能設計庫DS_ID}" inline="true" icon="📐">功能設計庫</database>
+<database data-source-url="collection://{功能設計庫DS_ID}" inline="false" icon="📐">功能設計庫</database>
 
 {若有 Bug 知識庫}
-<database data-source-url="collection://{BugKB_DS_ID}" inline="true" icon="🐛">Bug 知識庫</database>
+<database data-source-url="collection://{BugKB_DS_ID}" inline="false" icon="🐛">Bug 知識庫</database>
 
-<database data-source-url="collection://{專案DS_ID}" inline="true" icon="📂">專案資料庫</database>
+<database data-source-url="collection://{專案DS_ID}" inline="false" icon="📂">專案資料庫</database>
 ```
 
 ### 建立步驟
