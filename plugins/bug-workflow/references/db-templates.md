@@ -15,6 +15,8 @@
 3. **Bug 知識庫**
 4. **功能設計庫**
 
+> **重要**：`notion-create-database` 預設 `inline=false`（子頁面模式），資料庫會以連結形式顯示，需要點進去才能看到列表。每個資料庫建立後，必須立即使用 `notion-update-data-source` 設定 `is_inline: true`，才能在父頁面直接展開顯示列表。
+
 ### 第二輪：補上 Relation 欄位
 
 使用 `notion-update-data-source` 的 ADD COLUMN ... RELATION 語法：
@@ -35,7 +37,9 @@
 
 ### Schema
 
-使用 `notion-create-database` 建立，名稱為「專案資料庫」：
+使用 `notion-create-database` 建立，名稱為「專案資料庫」。
+
+> **建立後立即執行**：使用 `notion-update-data-source` 設定 `is_inline: true`，確保資料庫在父頁面直接展開顯示。
 
 | 欄位名稱 | 類型 | 選項 / 說明 |
 |----------|------|-------------|
@@ -72,7 +76,9 @@
 
 ### Schema
 
-使用 `notion-create-database` 建立，名稱為「任務追蹤工具」：
+使用 `notion-create-database` 建立，名稱為「任務追蹤工具」。
+
+> **建立後立即執行**：使用 `notion-update-data-source` 設定 `is_inline: true`，確保資料庫在父頁面直接展開顯示。
 
 | 欄位名稱 | 類型 | 選項 / 說明 |
 |----------|------|-------------|
@@ -117,7 +123,9 @@
 
 ### Schema
 
-使用 `notion-create-database` 建立，名稱為「Bug 知識庫」：
+使用 `notion-create-database` 建立，名稱為「Bug 知識庫」。
+
+> **建立後立即執行**：使用 `notion-update-data-source` 設定 `is_inline: true`，確保資料庫在父頁面直接展開顯示。
 
 | 欄位名稱 | 類型 | 選項 / 說明 |
 |----------|------|-------------|
@@ -139,7 +147,9 @@
 
 ### Schema
 
-使用 `notion-create-database` 建立，名稱為「功能設計庫」：
+使用 `notion-create-database` 建立，名稱為「功能設計庫」。
+
+> **建立後立即執行**：使用 `notion-update-data-source` 設定 `is_inline: true`，確保資料庫在父頁面直接展開顯示。
 
 | 欄位名稱 | 類型 | 選項 / 說明 |
 |----------|------|-------------|
