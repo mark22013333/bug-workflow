@@ -73,7 +73,7 @@ git diff $(git merge-base HEAD {prod_branch})..HEAD --stat
 git diff $(git merge-base HEAD {prod_branch})..HEAD
 ```
 
-> 若 `prod_branch` 未設定（舊專案），依序嘗試 `production` → `master` → `main`，使用第一個存在的分支。
+> 若 `prod_branch` 未設定（舊專案），回退邏輯：先取 `origin/HEAD` 指向的分支，若無則依序嘗試 `production` → `master` → `main`。
 
 根據 CLAUDE.md 的架構描述，產出分層變更摘要。
 

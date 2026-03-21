@@ -250,7 +250,7 @@ Leader 收集所有 Reviewer 的發現（含交叉分享結果），彙整寫入
 
 - **3 人並行的 token 消耗約為單次的 5-6 倍**：3 位 Reviewer 各自讀取完整程式碼 + 設計文件，再加上交叉審查。小變更（< 5 個檔案）建議用 `--quick` 模式（單一 Subagent），節省 80% token。
 - **交叉審查傾向「無中生有」**：三位 Reviewer 獨立審查都沒嚴重問題時，交叉審查階段不太可能突然冒出真正嚴重的問題。Leader 彙整時應對交叉審查新增的「嚴重」問題持保留態度，優先信任獨立審查的結果。
-- **merge-base 的主分支名稱**：`{prod_branch}` 從專案設定檔的 `prod_branch` 欄位讀取（由 `/project-add` 設定）。若未設定，依序嘗試 `production` → `master` → `main`。
+- **merge-base 的主分支名稱**：`{prod_branch}` 從專案設定檔的 `prod_branch` 欄位讀取（由 `/project-add` 設定）。若未設定，回退邏輯：先取 `origin/HEAD` 指向的分支，若無則依序嘗試 `production` → `master` → `main`。
 
 ---
 
