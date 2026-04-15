@@ -9,7 +9,7 @@
     {
       "name": "feature-workflow",
       "description": "功能開發工作流 — 本地規劃、Agent Teams 開發與審查、Chrome DevTools 驗證、Notion 結案同步",
-      "version": "4.7.0",
+      "version": "4.9.0",
       "author": {
         "name": "Cheng"
       },
@@ -19,6 +19,8 @@
         "./skills/plan-setup",
         "./skills/plan-stack",
         "./skills/plan-start",
+        "./skills/plan-explore",
+        "./skills/plan-browse",
         "./skills/plan",
         "./skills/plan-spec",
         "./skills/plan-db",
