@@ -49,6 +49,7 @@ flowchart TD
 
     subgraph Phase2["🚀 Phase 2：日常使用"]
         direction TB
+        exploreFlow["/plan-explore（探索想法）→ /plan-browse（瀏覽規劃）"]
         bugFlow["/bug-start → /bug-update → /bug-close"]
         planFlow["/plan-start → /plan-spec → /plan-db → /plan-arch<br/>→ /plan-build → /plan-verify → /plan-review → /plan-close"]
     end
@@ -109,6 +110,12 @@ flowchart TD
 flowchart TD
     setup["/plan-setup<br/><i>首次設定</i>"]
     stack["/plan-stack<br/><i>自訂技術棧（可選）</i>"]
+
+    subgraph thinking["💭 探索與瀏覽（任何時候）"]
+        explore["/plan-explore<br/><i>思考夥伴：探索想法、調查問題</i>"]
+        browse["/plan-browse<br/><i>規劃瀏覽：深度閱讀、比較、搜尋</i>"]
+    end
+
     start["/plan-start<br/><i>建立 Notion + .spec/ + Git branch</i>"]
     plan["/plan-spec → /plan-db → /plan-arch<br/><i>本地規劃</i>"]
     build["/plan-build<br/><i>Agent Teams 產生程式碼</i>"]
@@ -120,9 +127,12 @@ flowchart TD
     setup --> stack -.-> start --> plan --> build --> ide --> verify --> review --> close
     verify -- "❌ FAIL" --> build
     review -- "🔴 嚴重" --> build
+    explore -.->|見解結晶| start
+    browse -.->|想修改| plan
 
     style setup fill:#f0f0f0,stroke:#999
     style stack fill:#fff3cd,stroke:#ffc107
+    style thinking fill:#f3e5f5,stroke:#9c27b0
     style ide fill:#fff3cd,stroke:#ffc107
 ```
 
@@ -130,6 +140,8 @@ flowchart TD
 |------|------|-------------|
 | `/plan-setup` | 首次設定引導（Notion 偵測 + Agent 安裝） | 一次性 |
 | `/plan-stack` | 偵測專案分層結構，建立自訂技術棧 | **0 次** |
+| `/plan-explore` | 思考夥伴：探索想法、調查代碼庫、比較方案 | **0 次** |
+| `/plan-browse` | 規劃瀏覽：深度閱讀、跨任務比較、模式搜尋 | **0 次** |
 | `/plan-start <任務簡述>` | 建立 Notion 條目 + `.spec/` 目錄 + Git branch | **2-3 次** |
 | `/plan` | 完整規劃串接（自動依序 spec→db→arch） | **0 次** |
 | `/plan-spec` | 技術規格書 | **0 次** |
