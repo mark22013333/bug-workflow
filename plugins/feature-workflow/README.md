@@ -1,4 +1,4 @@
-# Feature Workflow Plugin `v4.7.0`
+# Feature Workflow Plugin `v4.9.0`
 
 功能開發工作流 — 整合 Notion 與 Claude Code，以 `.spec/` 目錄做本地規劃，Agent Teams 產生程式碼與審查，Chrome DevTools 驗收驗證，結案時批次同步 Notion。
 
@@ -37,6 +37,12 @@ flowchart TD
         setup --> projAdd --> stack
     end
 
+    subgraph thinking["💭 探索與瀏覽（任何時候）"]
+        direction TB
+        explore["/plan-explore<br/><i>思考夥伴：探索想法、調查問題</i>"]
+        browse["/plan-browse<br/><i>規劃瀏覽：深度閱讀、比較、搜尋</i>"]
+    end
+
     subgraph dev["🚀 開發循環（每個功能重複）"]
         direction TB
         start["/plan-start &lt;功能簡述&gt;<br/><i>建立 Notion + .spec/ + Git branch</i>"]
@@ -53,8 +59,12 @@ flowchart TD
     end
 
     init --> dev
+    thinking -.->|見解結晶| start
+    browse -.->|想修改| plan
+    explore -.->|建立任務| start
 
     style init fill:#e3f2fd,stroke:#2196f3
+    style thinking fill:#f3e5f5,stroke:#9c27b0
     style dev fill:#fff3e0,stroke:#ff9800
     style stack fill:#fff3cd,stroke:#ffc107
     style ide fill:#fff3cd,stroke:#ffc107
@@ -71,6 +81,8 @@ flowchart TD
 |-------|------|-------------|
 | `/plan-setup` | 首次設定引導（Notion 偵測 + Agent 安裝） | 一次性 |
 | `/plan-stack` | 偵測專案分層結構，建立自訂技術棧 | **0 次** |
+| `/plan-explore` | 思考夥伴：探索想法、調查問題、比較方案 | **0 次** |
+| `/plan-browse` | 規劃瀏覽：深度閱讀、跨任務比較、模式搜尋 | **0 次** |
 | `/plan-start` | 建立任務到 .spec/ + Notion | **2-3 次** |
 | `/plan` | 完整規劃串接（自動依序 spec→db→arch） | **0 次** |
 | `/plan-spec` | 技術規格書 | **0 次** |
@@ -83,6 +95,35 @@ flowchart TD
 | `/plan-sync` | 手動中途同步 .spec/ 到 Notion | **2-3 次** |
 | `/plan-status` | 查看任務狀態 | **0 次** |
 | `/project-add` | 新增或更新專案對應（來自 bug-workflow） | 1-2 次 |
+
+---
+
+## 探索與瀏覽
+
+在正式進入開發循環之前（或任何時候），可使用探索和瀏覽功能：
+
+### plan-explore（思考夥伴）
+
+自由形式的思考工具 — 探索問題空間、調查代碼庫、比較方案、視覺化架構。不產出程式碼，但可更新 `.spec/` 設計文件。
+
+```bash
+/plan-explore                     # 自由探索
+/plan-explore 推播效能優化          # 帶主題探索
+/plan-explore <slug>              # 基於已有任務探索
+```
+
+### plan-browse（規劃瀏覽器）
+
+深度瀏覽 `.spec/` 目錄中的設計文件。不只列出任務，而是讀取、理解、比較設計內容。
+
+```bash
+/plan-browse                         # 互動式瀏覽
+/plan-browse <slug>                  # 深度閱讀
+/plan-browse --compare <s1> <s2>     # 比較兩個規劃
+/plan-browse --search <關鍵字>        # 跨任務搜尋
+/plan-browse --patterns              # 分析共通模式
+/plan-browse --timeline              # 時間軸瀏覽
+```
 
 ---
 
