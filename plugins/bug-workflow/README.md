@@ -1,4 +1,4 @@
-# Bug Workflow Plugin `v3.3.0`
+# Bug Workflow Plugin `v3.5.0`
 
 整合 Notion 與 Claude Code，自動化 Bug 生命週期管理。
 
@@ -8,9 +8,12 @@
 |------|------|
 | `/bug-setup` | 首次設定引導，自動偵測 Notion 資料庫並產出設定檔 |
 | `/bug-start <問題簡述>` | 在 Notion 建立 Bug 條目，填入標準化模板 |
+| `/bug-investigate` | 假說驅動根因調查 — 證據收集、模式比對、假說驗證、3-Strike 升級 |
+| `/bug-fix` | 修復紀律 — 鐵律檢查（根因確認才能修）、迴歸測試、gstack 驗證 |
 | `/bug-update <內容>` | 調查過程中更新 Bug 頁面（Log、SQL、判斷等） |
 | `/bug-update reopen <Bug>` | 重新開啟已結案的 Bug（復發處理） |
 | `/bug-close` | 從 Git diff 自動擷取修復細節，結案並同步知識庫 |
+| `/crew-upgrade` | 一次更新 bug-workflow + feature-workflow，顯示 CHANGELOG 摘要 |
 | `/project-add` | **偵測專案架構**（簡單型/產品型）→ Notion 註冊 → 可選安裝 DB MCP |
 
 ## 前置條件
@@ -68,19 +71,23 @@ claude plugin update bug-workflow@company-marketplace
 ```mermaid
 flowchart TD
     discover["發現 Bug"]
-    start["/bug-start<br/><i>建立 Notion 條目</i>"]
+    start["/bug-start<br/><i>建立 Notion 條目 + 初始證據</i>"]
+    investigate["/bug-investigate<br/><i>假說驅動根因調查</i>"]
     update["/bug-update<br/><i>補充 Log、SQL、判斷</i>"]
+    bugfix["/bug-fix<br/><i>鐵律檢查 + 迴歸測試</i>"]
     fix["修復並 commit"]
-    close["/bug-close<br/><i>結案（diff → Notion → 知識庫）</i>"]
+    close["/bug-close<br/><i>退出驗證 + 結案 + 知識庫 + 學習</i>"]
     reopen{上線後復發？}
     reopenCmd["/bug-update reopen<br/><i>重新開啟</i>"]
 
-    discover --> start --> update --> fix --> close --> reopen
-    reopen -- "是" --> reopenCmd --> update
+    discover --> start --> investigate --> update --> fix --> bugfix --> close --> reopen
+    reopen -- "是" --> reopenCmd --> investigate
     reopen -- "否" --> done(["完成"])
 
     style discover fill:#fee,stroke:#f66
     style done fill:#efe,stroke:#6c6
+    style investigate fill:#e3f2fd,stroke:#2196f3
+    style bugfix fill:#e3f2fd,stroke:#2196f3
 ```
 
 ## 使用範例
@@ -91,12 +98,34 @@ flowchart TD
 /bug-start 推播排程發送失敗，部分使用者未收到訊息
 ```
 
+### 調查 Bug
+
+```bash
+/bug-investigate                        # 調查當前進行中的 bug
+/bug-investigate NullPointerException   # 帶症狀描述開始調查
+/bug-investigate --resume               # 繼續上次的調查
+```
+
 ### 更新調查資訊
 
 ```bash
 /bug-update 關鍵 log：NullPointerException at PushService.java:235
 /bug-update 初步判斷：推播排程在取得 access token 時發生空指標，可能是 token 過期未更新
 /bug-update log /opt/tomcat/logs/catalina.out    # 從檔案擷取 ERROR
+```
+
+### 修復並驗證
+
+```bash
+/bug-fix                  # 標準修復流程（鐵律檢查 + 迴歸測試）
+/bug-fix --verify-only    # 已修復，只要驗證 + 產出測試
+```
+
+### 更新 Plugin
+
+```bash
+/crew-upgrade              # 檢查並更新所有 CREW plugins
+/crew-upgrade --check      # 只檢查版本，不更新
 ```
 
 ### 結案

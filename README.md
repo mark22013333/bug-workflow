@@ -49,8 +49,8 @@ flowchart TD
 
     subgraph Phase2["🚀 Phase 2：日常使用"]
         direction TB
-        bugFlow["/bug-start → /bug-update → /bug-close"]
-        planFlow["/plan-start → /plan-spec → /plan-db → /plan-arch<br/>→ /plan-build → /plan-verify → /plan-review → /plan-close"]
+        bugFlow["/bug-start → /bug-investigate → /bug-update → /bug-fix → /bug-close"]
+        planFlow["/plan-start → /plan-spec → /plan-db → /plan-arch<br/>→ /plan-build → /plan-security → /plan-verify → /plan-review → /plan-close"]
     end
 
     Phase0 --> Phase1 --> Phase2
@@ -73,28 +73,35 @@ flowchart TD
 ```mermaid
 flowchart TD
     discover["發現 Bug"]
-    start["/bug-start<br/><i>建立 Notion 條目</i>"]
+    start["/bug-start<br/><i>建立 Notion 條目 + 初始證據</i>"]
+    investigate["/bug-investigate<br/><i>假說驅動根因調查</i>"]
     update["/bug-update<br/><i>補充 Log、SQL、判斷</i>"]
+    bugfix["/bug-fix<br/><i>鐵律檢查 + 迴歸測試</i>"]
     fix["修復並 commit"]
-    close["/bug-close<br/><i>結案（diff → Notion → 知識庫）</i>"]
+    close["/bug-close<br/><i>退出驗證 + 結案 + 知識庫 + 學習</i>"]
     reopen{上線後復發？}
     reopenCmd["/bug-update reopen<br/><i>重新開啟</i>"]
 
-    discover --> start --> update --> fix --> close --> reopen
-    reopen -- "是" --> reopenCmd --> update
+    discover --> start --> investigate --> update --> fix --> bugfix --> close --> reopen
+    reopen -- "是" --> reopenCmd --> investigate
     reopen -- "否" --> done(["完成"])
 
     style discover fill:#fee,stroke:#f66
     style done fill:#efe,stroke:#6c6
+    style investigate fill:#e3f2fd,stroke:#2196f3
+    style bugfix fill:#e3f2fd,stroke:#2196f3
 ```
 
 | 指令 | 說明 |
 |------|------|
 | `/bug-setup` | 首次設定引導 |
 | `/bug-start <問題簡述>` | 建立 Bug 條目 |
+| `/bug-investigate` | 假說驅動根因調查（五階段 + 3-Strike） |
+| `/bug-fix` | 修復紀律（鐵律 + 迴歸測試 + gstack 驗證） |
 | `/bug-update <內容>` | 更新調查資訊（Log、SQL、判斷） |
 | `/bug-update reopen <Bug>` | 重新開啟已結案 Bug |
 | `/bug-close` | 結案 + 同步知識庫 |
+| `/crew-upgrade` | 一次更新所有 CREW plugins |
 | `/project-add` | **偵測專案架構** + Notion 註冊 + DB MCP 安裝 |
 
 詳細說明見 [plugins/bug-workflow/README.md](plugins/bug-workflow/README.md)
@@ -112,12 +119,13 @@ flowchart TD
     start["/plan-start<br/><i>建立 Notion + .spec/ + Git branch</i>"]
     plan["/plan-spec → /plan-db → /plan-arch<br/><i>本地規劃</i>"]
     build["/plan-build<br/><i>Agent Teams 產生程式碼</i>"]
+    security["/plan-security<br/><i>三層安全掃描</i>"]
     ide(["IDE 啟動 + Chrome 開啟頁面"])
     verify["/plan-verify<br/><i>chrome-cdp 驗收驗證</i>"]
     review["/plan-review<br/><i>Agent Teams 3 人審查</i>"]
     close["/plan-close<br/><i>批次同步 Notion</i>"]
 
-    setup --> stack -.-> start --> plan --> build --> ide --> verify --> review --> close
+    setup --> stack -.-> start --> plan --> build --> security --> ide --> verify --> review --> close
     verify -- "❌ FAIL" --> build
     review -- "🔴 嚴重" --> build
 
@@ -136,8 +144,9 @@ flowchart TD
 | `/plan-db` | 資料庫設計 | **0 次** |
 | `/plan-arch` | 架構設計 | **0 次** |
 | `/plan-build [--dry-run]` | Agent Teams 最多 5 人產生程式碼（含 DB Engineer） | **0 次** |
+| `/plan-security` | 三層安全掃描 | **0 次** |
 | `/plan-verify [--api-only]` | chrome-devtools-mcp 或 cdp.mjs 驗證驗收條件 | **0 次** |
-| `/plan-review [--quick]` | Agent Teams 3 人審查（邏輯/品質/安全） | **0 次** |
+| `/plan-review [--quick]` | Agent Teams 3 人審查（邏輯/品質/效能） | **0 次** |
 | `/plan-close` | 一次性批次同步到 Notion + 知識庫 + Git 提交 | **3-5 次** |
 | `/plan-sync` | 手動中途同步（按需） | **2-3 次** |
 | `/plan-status` | 列出所有活躍任務 | **0 次** |
@@ -381,6 +390,12 @@ cd ~/IdeaProjects/YourProject   # 切換到專案目錄
 `/plan-stack` 會掃描專案的 `src/main/java` 目錄，自動辨識各層級的 package 命名慣例，產生掃描規則寫入 `stacks/{id}.md`。`/plan-build` 的 Agent 會讀取這些規則找到現有程式碼學習風格。
 
 ### 更新 Plugin
+
+```bash
+/crew-upgrade              # 一次更新所有 CREW plugins + 顯示 CHANGELOG
+```
+
+或手動：
 
 ```bash
 claude plugin update bug-workflow@company-marketplace && \

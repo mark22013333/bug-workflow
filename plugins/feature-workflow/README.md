@@ -1,4 +1,4 @@
-# Feature Workflow Plugin `v4.9.0`
+# Feature Workflow Plugin `v4.10.0`
 
 功能開發工作流 — 整合 Notion 與 Claude Code，以 `.spec/` 目錄做本地規劃，Agent Teams 產生程式碼與審查，Chrome DevTools 驗收驗證，結案時批次同步 Notion。
 
@@ -48,12 +48,13 @@ flowchart TD
         start["/plan-start &lt;功能簡述&gt;<br/><i>建立 Notion + .spec/ + Git branch</i>"]
         plan["/plan-spec → /plan-db → /plan-arch<br/><i>本地規劃（零 Notion 呼叫）</i>"]
         build["/plan-build<br/><i>Agent Teams 最多 5 人產生程式碼</i>"]
+        security["/plan-security<br/><i>三層安全掃描</i>"]
         ide(["IDE 啟動本地服務<br/>Chrome 開啟頁面"])
         verify["/plan-verify<br/><i>chrome-cdp 驗收驗證</i>"]
         review["/plan-review<br/><i>Agent Teams 3 人程式碼審查</i>"]
         close["/plan-close<br/><i>批次同步 Notion + Git 提交</i>"]
 
-        start --> plan --> build --> ide --> verify --> review --> close
+        start --> plan --> build --> security --> ide --> verify --> review --> close
         verify -- "❌ FAIL" --> build
         review -- "🔴 嚴重問題" --> build
     end
@@ -89,6 +90,7 @@ flowchart TD
 | `/plan-db` | 資料庫設計 | **0 次** |
 | `/plan-arch` | 架構設計 | **0 次** |
 | `/plan-build` | Agent Teams 最多 5 人產生程式碼（含 DB Engineer） | **0 次** |
+| `/plan-security` | 三層安全掃描（靜態規則/上下文感知/對抗性思維） | **0 次** |
 | `/plan-verify` | chrome-devtools-mcp 或 cdp.mjs 操作瀏覽器驗證驗收條件 | **0 次** |
 | `/plan-review` | Agent Teams 3 人程式碼審查 | **0 次** |
 | `/plan-close` | 批次同步 Notion + Git 提交 | **3-5 次** |
@@ -212,7 +214,7 @@ flowchart LR
 flowchart LR
     L["🔍 Logic Reviewer<br/>邏輯正確性"]
     Q["✨ Quality Reviewer<br/>程式碼品質"]
-    S["🛡️ Security Reviewer<br/>安全與效能"]
+    S["🛡️ Performance Reviewer<br/>效能"]
     X["🔄 交叉審查"]
     R["📋 Leader 彙整報告"]
 
