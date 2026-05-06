@@ -69,7 +69,7 @@ claude plugin update bug-workflow@company-marketplace
 安裝後執行 `/bug-setup`，自動完成：
 1. 選擇設定檔儲存位置（公司環境或個人環境）
 2. 偵測 Notion Workspace 中的資料庫
-3. 驗證並補齊必要欄位（狀態、根因分類、修復分支等）
+3. 驗證並補齊必要欄位（狀態、根因分類、修復分支、相關任務等）
 4. 設定當前專案目錄與 Notion 專案的對應
 5. 產出設定檔
 
@@ -116,7 +116,7 @@ flowchart TD
 ### 修復並驗證
 
 ```bash
-/bug-fix                  # 標準修復流程（鐵律檢查 + 迴歸測試）
+/bug-fix                  # 標準修復流程（分支檢查 + 鐵律檢查 + 迴歸測試 + merge 引導）
 /bug-fix --verify-only    # 已修復，只要驗證 + 產出測試
 ```
 
@@ -131,7 +131,7 @@ flowchart TD
 ### 結案
 
 ```bash
-/bug-close    # 從 Git diff 自動擷取修復細節，更新 Notion 並同步知識庫
+/bug-close    # merge 引導 + 從 Git diff 擷取修復細節 + 結案 + 同步知識庫
 ```
 
 ### 重新開啟已結案 Bug
