@@ -138,6 +138,8 @@ flowchart TD
 |------|------|-------------|
 | `/plan-setup` | 首次設定引導（Notion 偵測 + Agent 安裝） | 一次性 |
 | `/plan-stack` | 偵測專案分層結構，建立自訂技術棧 | **0 次** |
+| `/plan-explore` | 思考夥伴：探索想法、調查問題、比較方案 | **0 次** |
+| `/plan-browse` | 規劃瀏覽：深度閱讀、跨任務比較、模式搜尋 | **0 次** |
 | `/plan-start <任務簡述>` | 建立 Notion 條目 + `.spec/` 目錄 + Git branch（含退出驗證） | **3-5 次** |
 | `/plan` | 完整規劃串接（自動依序 spec→db→arch） | **0 次** |
 | `/plan-spec` | 技術規格書 | **0 次** |
